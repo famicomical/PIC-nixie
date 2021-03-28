@@ -1,0 +1,9 @@
+Dalibor Farny Cathode Poisioning Prevention Routing:
+
+Nixie tubes tend to develop a phenomenon called “cathode poisoning” on digits that are no in regular use. To make sure the digits in your clock stays in good condition, all of them needs to be exercised regularly. This is done by running a “cathode poisoning prevention routine” regularly.
+
+When writing your own code for a clock (or any other display with our R|Z568M nixie tubes), please use ratio 60s : 0.2s. For each 60 seconds when the tube is on (whatever digit), exercise every other digit for 0.2s. For instance, if you let your display run for 10 minutes (600 seconds) on digit “1” (this is the case of the leftmost tube in a typical clock), you need to run a routine that will let each other digit glow for 2 seconds (60*10 : 0.2*10).
+
+ 
+
+More information to come soon.. With this timing you are on the safe side with our R|Z568M nixie tubes. We are running long-term tests to pin-point exact values that will take into account the manufacturing tolerance in the gas purity (which is most likely the critical factor for the development of cathode poisoning).
