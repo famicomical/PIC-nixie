@@ -7,19 +7,20 @@
 ;
 ;			PROGRAM DESCRIPTION
 ; 
-; This program performs the logic to create runs on a PIC16F54. (16C54 is deprecated)
-; Adapted from CLOCK54.ASM contained in Microchip Application Note AN590 
-; By Rony Ballouz
+; This program emulates a clock and generates output signals to display the time on
+; four common-anode nixie tubes. the programs runs on a PIC16F54 MCU. (16C54 is deprecated)
+; Adapted from CLOCK54.ASM contained within the Microchip Application Note AN590 
+; herein reproduced and modified by Rony Ballouz
 ;
 ;                       Hardware Description
 ;
 ;  DISPLAYS
-; Four IN-14 Nixie Neon Tubes are multiplexed.  The cathodes are tied together, with
+; Four IN-14 Nixie Neon Tubes are multiplexed. The cathodes are tied together, with
 ; the anode pins broken out separately.  The display appears as a clock
-; with an optional center neon bulb ( 88:88 ).  The digits are output to the upper 4
+; with an optional center neon bulb ( 12:34 ).  The digits are output to the upper 4
 ; bits of Port B in binary-coded decimal (BCD) for interfacing the K155ID1 driver. The
 ; colon is controlled by RB0, while RB1-3 act as inputs for switches to set the time.
-;  The four common anodes are attached to the four Port A pins through transistors.
+;  The four common anodes are attached to the four Port A pins through level shifters.
 ; RA0 for CA0, RA1/CA1... through CA3.  
 ;
 ;  SWITCHES
@@ -27,7 +28,7 @@
 ; SW2 and SW3 allow the user to set the minutes and hours respectively, and SW1 sets the
 ; display to show seconds. The optional SW0 can be connected for use as a reset switch.
 ;
-; Because, in the original code, all I/O pins are already used for the muxed displays,
+; In the original code, all I/O pins are already used for the muxed displays, so the
 ; switches are read in alternatingly through software. Port B pins are changed to inputs 
 ; momentarily during read and changed back to outputs during display.
 ;
@@ -64,17 +65,17 @@ PA1     equ     6      		;16C5X Status bits
 PA2     equ     7       	;16C5X Status bits
 ;
 ZERO	equ		H'7E'
-ONE	    equ		H'0C'
-TWO	    equ		H'B6'
+ONE	equ		H'0C'
+TWO	equ		H'B6'
 THREE	equ		H'9E'
 FOUR	equ		H'CC'
 FIVE	equ		H'DA'
-SIX	    equ		H'FA'		; Mapping of segments for display (PORT_B)
+SIX	equ		H'FA'		; Mapping of segments for display (PORT_B)
 SEVEN	equ		H'0E'
 EIGHT	equ		H'FE'
 NINE	equ		H'CE'
 COLON	equ		H'01'
-T	    equ		H'F0'
+T	equ		H'F0'
 BLANK	equ		H'00'
 ;
 MAXNTHS	equ		D'12'		; constants for timer variable count up
@@ -94,32 +95,32 @@ DISPOFF	equ		H'FF'
 SWITCH	equ		B'00001110'	; Activate RB1-3 for switch inputs     
 ;
 ;  Flag bit assignments
-SEC		equ		H'0'		; update time display values for sec, min, or hours
-MIN		equ		H'1'
-HRS		equ		H'2'
-CHG		equ		H'3'		; a change has occurred on a switch or to a potentially displayed value				 
-SW1		equ		H'4'		; Flag bit assignments - switches that are on = 1
-SW2		equ		H'5'		;  SW1 is Seconds-minutes, SW2-hours, SW3-mode
-SW3		equ		H'6'
+SEC	equ		H'0'		; update time display values for sec, min, or hours
+MIN	equ		H'1'
+HRS	equ		H'2'
+CHG	equ		H'3'		; a change has occurred on a switch or to a potentially displayed value				 
+SW1	equ		H'4'		; Flag bit assignments - switches that are on = 1
+SW2	equ		H'5'		;  SW1 is Seconds-minutes, SW2-hours, SW3-mode
+SW3	equ		H'6'
 SW_ON	equ		H'7'		; a switch has been pressed
 ;
 ;   VARIABLES
 keys	equ		H'08'		; variable location - which keys are pressed? bit0/sw1... 
-flags	equ     H'09'		; bit flags; 0-SEC, 1-MIN, 2-HRS, 3-CHG, 4-SW1, 5-SW2, 6-SW3
-;		equ		H'0A'		; Not Used
-display equ     H'0B'		; variable location - which display to update
+flags	equ     	H'09'		; bit flags; 0-SEC, 1-MIN, 2-HRS, 3-CHG, 4-SW1, 5-SW2, 6-SW3
+;	equ		H'0A'		; Not Used
+display equ     	H'0B'		; variable location - which display to update
 digit1	equ		H'0C'		; Rightmost display value
 digit2	equ		H'0D'		; Second display from right
 digit3	equ		H'0E'		; Third    "       "    "
 digit4	equ		H'0F'		; Fourth (and Leftmost)
 ;
 ;	timer variables start at a number that allows rollover in sync with time rollover,
-;	 i.e. seconds starts at decimal 195 so that sixty 1-second increments causes 0.
+;	 i.e. seconds starts at decimal 196 so that sixty 1-second increments causes 0.
 sec_nth	equ		H'10'		; seconds, fractional place
 seconds	equ		H'11'		; seconds
 minutes	equ		H'12'  		; minutes
 hours	equ		H'13'  		; hours
-var		equ		H'14'		; variable for misc math computations
+var	equ		H'14'		; variable for misc math computations
 count	equ		H'15'		; loop counter variable
 count2	equ		H'16'		; 2nd loop counter for nested loops
 
@@ -130,15 +131,16 @@ count2	equ		H'16'		; 2nd loop counter for nested loops
 ;
 START   
 		movlw	H'03'   	; set option register, transition on clock,
-        option				; Prescale TMR0, 1:16 
+		option			; Prescale TMR0, 1:16 (contents of the W register
+					; will be transferred to the Option register)
 ;
 		movlw	0
 		tris	PORT_A		; Set all port pins as outputs
 		tris	PORT_B
 		movlw	BLANK
 		movwf	PORT_B		; Blank the display
-		bcf		STATUS,PA1
-		bcf		STATUS,PA0
+		bcf	STATUS,PA1	;set memory to page 0
+		bcf	STATUS,PA0
 ;
 ;  initialize variables
 		movlw	H'01'
@@ -161,23 +163,23 @@ START
 		movlw	H'00'
 		movwf	flags
 ;
-;?  call converts for minutes and hours to initialize display vsriables
+;
 ;
 MAIN 
 ;
-;  wait for TMR0 to roll-over
 TMR0_FILL
 		movf	TMR0,0
-		btfss	STATUS,Z  	; note, TMR0 is left free running to not lose clock cycles on writes
-		goto	TMR0_FILL
+		btfss	STATUS,Z  	; skip if TMR0 has not rolled over
+					; TMR0 is left free running to not lose clock cycles on writes
+		goto	TMR0_FILL	
 ;
-		incfsz	sec_nth,1  	;  add 1 to nths, n X nths = 1 sec, n is based on prescaler
+		incfsz	sec_nth,1  	; add 1 to nths, n X nths = 1 sec, n is based on prescaler
 		goto	TIME_DONE
 		movlw	MAXNTHS
 		movwf	sec_nth  	; restore sec_nths variable for next round
 ;
 CHECK_SW
-		btfss	flags,SW_ON ; if no switches press, bypass this
+		btfss	flags,SW_ON ; if no switches pressed, bypass this
 		goto	SET_TIME
 		btfsc	flags,SW1
 		goto	SET_TIME    ; if seconds display is pressed, do not change time
@@ -204,15 +206,15 @@ HOURSET
 		goto	CHECK_TIME 	; since no timing is required, go to display changes
 ;
 SET_TIME
-		bsf		flags,SEC 	; seconds, if displayed, should be updated
-		bsf		flags,CHG 	; a flag change was made.
+		bsf	flags,SEC 	; seconds, if displayed, should be updated
+		bsf	flags,CHG 	; a flag change was made.
 		incfsz	seconds,1 	;  add 1 to seconds
 		goto	TIME_DONE
 		movlw	MAXSECS
 		movwf	seconds   	; restore seconds variable for next round
 ;
-		bsf		flags,MIN 	; minutes, if displayed, should be updated
-		bsf		flags,CHG
+		bsf	flags,MIN 	; minutes, if displayed, should be updated
+		bsf	flags,CHG
 		movlw	ADJMIN
 		subwf	sec_nth,1 	; subtraction needed adjustment for each minute
 		incfsz	minutes,1  	; add 1 to minutes
@@ -220,8 +222,8 @@ SET_TIME
 		movlw	MAXMINS
 		movwf	minutes	  	; restore minutes variable for next hour countdown
 ;
-		bsf		flags,HRS
-		bsf		flags,CHG
+		bsf	flags,HRS
+		bsf	flags,CHG
 		movlw	ADJHR
 		addwf	sec_nth,1 	; add needed adjustment for each hour
 		incfsz	hours,1	  	; add 1 to hours
@@ -331,29 +333,29 @@ CYCLE
 		tris	PORT_B	   	; Set some port B pins as switch inputs
 		movlw	H'0F'
 		andwf	flags,1	   	; reset switch flags to zero
-		nop		   			; nop may not be needed, allows old outputs to bleed
-		nop		   			;   off through 10k R before reading port pins
+		nop		   	; nop may not be needed, allows old outputs to bleed
+		nop		        ; off through 10k R before reading port pins
 		nop
 		movf	PORT_B,0
 		movwf	var
 		btfss	var,1
 		goto	SWITCH2
-		bsf		flags,CHG
-		bsf		flags,SW1
-		bsf		flags,SW_ON
+		bsf	flags,CHG
+		bsf	flags,SW1
+		bsf	flags,SW_ON
 ;
 SWITCH2	
 		btfss	var,2
 		goto	SWITCH3
-		bsf		flags,CHG
-		bsf		flags,SW2
-		bsf		flags,SW_ON
+		bsf	flags,CHG
+		bsf	flags,SW2
+		bsf	flags,SW_ON
 SWITCH3	
 		btfss	var,3
 		goto	SETPORT
-		bsf		flags,CHG
-		bsf		flags,SW3
-		bsf		flags,SW_ON
+		bsf	flags,CHG
+		bsf	flags,SW3
+		bsf	flags,SW_ON
 ;
 SETPORT	
 		movlw	H'00'
