@@ -1,0 +1,3 @@
+note:
+use option __config 1 to set XT mode and turn off watchdog timer
+use __config 2 to set HS oscillator config

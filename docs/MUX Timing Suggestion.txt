@@ -4,4 +4,4 @@ If you multiplex a nixie, you need to add blanking intervals, to avoid ghosting.
 
 DO NOT blank, by turning all cathodes OFF. Especially, when using cathode drivers like a 74141 (or its Russian equivalent). If you attempt this with these devices, they will see over ~100V, and will conduct thru more than one cathode at a time. This will look similar to ghosting.  These devices are leaky, so at least one cathode should be ON at all times.
 
-Turn-ON time decreases as supply voltage increases. Use a higher supply voltage when possible. Just because the specs say 170V, doesn’t mean you need to use 170V. This is a minimum value, to ensure striking. Remember that anode resistor. Its REQUIRED ! When a nixie turns ON, the voltage drops to its sustain level (130V to 150V). The difference  (Supply – Sustain) is dropped across that anode resistor. That sets the operating current. Use a supply of at least 180V. 190V to 210V is even better, if its a multiplexed circuit.
+Turn-ON time decreases as supply voltage increases. Use a higher supply voltage when possible. 

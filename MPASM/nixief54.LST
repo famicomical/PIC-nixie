@@ -1,0 +1,531 @@
+MPASM  5.20                      NIXIEF54.ASM   4-13-2021  23:21:24         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 ;
+                      00002 ;********************************************************************
+                      00003         LIST    P = 16F54, n = 66
+                      00004 ;
+                      00005 ;                      Nixie Clock
+                      00006 ;*********************************************************************
+                      00007 ;
+                      00008 ;                       PROGRAM DESCRIPTION
+                      00009 ; 
+                      00010 ; This program emulates a clock and generates output signals to display the time on
+                      00011 ; four common-anode nixie tubes. the programs runs on a PIC16F54 MCU. (16C54 is deprecated)
+                      00012 ; Adapted from CLOCK54.ASM contained within the Microchip Application Note AN590 
+                      00013 ; herein reproduced and modified by Rony Ballouz
+                      00014 ;
+                      00015 ;                       Hardware Description
+                      00016 ;
+                      00017 ;  DISPLAYS
+                      00018 ; Four IN-14 Nixie Neon Tubes are multiplexed. The cathodes are tied together, with
+                      00019 ; the anode pins broken out separately.  The display appears as a clock
+                      00020 ; with an optional center neon bulb ( 12:34 ).  The digits are output to the upper 4
+                      00021 ; bits of Port B in binary-coded decimal (BCD) for interfacing the K155ID1 driver. The
+                      00022 ; colon is controlled by RB0, while RB1-3 act as inputs for switches to set the time.
+                      00023 ;  The four common anodes are attached to the four Port A pins through level shifters.
+                      00024 ; RA0 and RA2 for 10s place in hours and mins, RA1 RA3 for 1s place in hours and mins.  
+                      00025 ;
+                      00026 ;  SWITCHES
+                      00027 ; Port B is connected to switches such that SWX connects RBX to VCC (X=1,2,3) 
+                      00028 ; SW2 and SW3 allow the user to set the minutes and hours respectively, and SW1 sets the
+                      00029 ; display to show seconds. 
+                      00030 ;
+                      00031 ; TODO: invert 'display' use cases, port a outputs -- done
+                      00032 ;       fix hex outputs to port b -- done: removed routine for converting digits 
+                      00033 ;                               now implemented by 4x left rotate during refresh
+                      00034 ;       incorporate blanking -- done
+                      00035 ;       add cathode poisoning prevention routine --yikes
+                      00036 ;
+                      00037 ;
+                      00038 ;**************************   Header *************************
+                      00039 ;
+                      00040 ;
+  000001FF            00041 PIC54   equ     H'01FF'
+  000003FF            00042 PIC56   equ     H'03FF'
+                      00043 ;
+  00000000            00044 POINTER equ     H'00'
+  00000001            00045 TMR0    equ     H'01'
+  00000002            00046 PC      equ     H'02'
+  00000003            00047 STATUS  equ     H'03'       ; F3 Reg is STATUS Reg.
+  00000004            00048 FSR     equ     H'04'
+                      00049 ;
+  00000005            00050 PORT_A  equ     H'05'           ; Nixie Anode Control
+  00000006            00051 PORT_B  equ     H'06'       ; Center Colon and BCD bits (Switches when inputs)
+                      00052 ;
+                      00053                                 ; STATUS REG. Bits
+  00000000            00054 CARRY   equ     0               ; Carry Bit is Bit.0 of F3
+  00000000            00055 C       equ     0
+  00000001            00056 DCARRY  equ     1
+  00000001            00057 DC      equ     1
+  00000002            00058 Z_bit   equ     2               ; Bit 2 of F3 is Zero Bit
+  00000002            00059 Z       equ     2
+  00000003            00060 P_DOWN  equ     3
+MPASM  5.20                      NIXIEF54.ASM   4-13-2021  23:21:24         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+  00000003            00061 PD      equ     3
+  00000004            00062 T_OUT   equ     4
+  00000004            00063 TO      equ     4
+  00000005            00064 PA0     equ     5               ;16C5X Status bits
+  00000006            00065 PA1     equ     6               ;16C5X Status bits
+  00000007            00066 PA2     equ     7               ;16C5X Status bits
+                      00067 ;
+  00000001            00068 COLON   equ             H'01'
+  00000000            00069 BLANK   equ             H'00'
+                      00070 ;
+  0000000C            00071 MAXNTHS equ             D'12'           ; constants for timer variable count up
+  000000C4            00072 MAXSECS equ             D'196'          ;  variables roll over in HEX at time roll over, see variable
+  000000C4            00073 MAXMINS equ             D'196'          ;  explanation
+  000000F4            00074 MAXHRS  equ             D'244'
+  000000F3            00075 MINHRS  equ             D'243'
+  00000009            00076 ADJMIN  equ             D'9'            ; number of nths that need to be subtracted each minute
+  00000022            00077 ADJHR   equ             D'34'           ; nths added each hour for accurate time
+  00000003            00078 ADJDAY  equ             D'3'            ; nths subtracted each 1/2 day rollover
+                      00079 ;
+  000000FE            00080 DISP1   equ             B'11111110'
+  000000FD            00081 DISP2   equ             B'11111101'     ; Mapping of Active Display Selection (PORT_A)
+  000000FB            00082 DISP3   equ             B'11111011'
+  000000F7            00083 DISP4   equ             B'11110111'
+  00000000            00084 DISPOFF equ             H'00'           ;inverted cause now port A controls anodes instead of cathodes
+  0000000E            00085 SWITCH  equ             B'00001110'     ; Activate RB1-3 for switch inputs     
+                      00086 ;
+                      00087 ;  Flag bit assignments
+  00000000            00088 SEC     equ             H'0'            ; update time display values for sec, min, or hours
+  00000001            00089 MIN     equ             H'1'
+  00000002            00090 HRS     equ             H'2'
+  00000003            00091 CHG     equ             H'3'            ; a change has occurred on a switch or to a potentially displaye
+                            d value                          
+  00000004            00092 SW1     equ             H'4'            ; Flag bit assignments - switches that are on = 1
+  00000005            00093 SW2     equ             H'5'            ;  SW1 is Seconds-minutes, SW2-hours, SW3-mode
+  00000006            00094 SW3     equ             H'6'
+  00000007            00095 SW_ON   equ             H'7'            ; a switch has been pressed
+                      00096 ;
+                      00097 ;   VARIABLES
+  00000008            00098 keys    equ             H'08'           ; variable location - which keys are pressed? bit0/sw1... 
+  00000009            00099 flags   equ             H'09'           ; bit flags; 0-SEC, 1-MIN, 2-HRS, 3-CHG, 4-SW1, 5-SW2, 6-SW3
+                      00100 ;       equ             H'0A'           ; Not Used
+  0000000B            00101 display equ             H'0B'           ; variable location - which digit to update 
+  0000000C            00102 digit1  equ             H'0C'           ; Rightmost display value
+  0000000D            00103 digit2  equ             H'0D'           ; Second display from right
+  0000000E            00104 digit3  equ             H'0E'           ; Third    "       "    "
+  0000000F            00105 digit4  equ             H'0F'           ; Fourth (and Leftmost)
+                      00106 ;
+                      00107 ;       timer variables start at a number that allows rollover in sync with time rollover,
+                      00108 ;        i.e. seconds starts at decimal 196 so that sixty 1-second increments causes 0.
+  00000010            00109 sec_nth equ             H'10'           ; seconds, fractional place
+  00000011            00110 seconds equ             H'11'           ; seconds
+  00000012            00111 minutes equ             H'12'           ; minutes
+  00000013            00112 hours   equ             H'13'           ; hours
+  00000014            00113 var     equ             H'14'           ; variable for misc math computations
+  00000015            00114 count   equ             H'15'           ; loop counter variable
+  00000016            00115 count2  equ             H'16'           ; 2nd loop counter for nested loops
+                      00116 
+                      00117 ;
+                      00118 ;********************************************************************************
+                      00119 ;
+MPASM  5.20                      NIXIEF54.ASM   4-13-2021  23:21:24         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00120 ;  Initialize Ports all outputs, blank display
+                      00121 ;
+                      00122 
+0FFF   0001           00123         __config        1       ; set oscillator mode to XT, WDT to off
+0000                  00124 START   
+0000   0C03           00125                 movlw   H'03'           ; set option register, transition on CLKOUT,
+0001   0002           00126                 option                  ; Prescale TMR0, 1:16 (contents of the W register
+                      00127                                         ; will be transferred to the Option register)
+                      00128 ;
+0002   0C00           00129                 movlw   0
+0003   0005           00130                 tris    PORT_A          ; Set Port A common anode pins to outputs
+0004   0C0E           00131                 movlw   SWITCH          ; set PB1-PB3 as inputs and rest of Port B as output
+0005   0006           00132                 tris    PORT_B
+0006   0C00           00133                 movlw   BLANK
+0007   0026           00134                 movwf   PORT_B          ; Blank the display
+0008   04C3           00135                 bcf     STATUS,PA1      ; set memory to page 0
+0009   04A3           00136                 bcf     STATUS,PA0
+                      00137 ;
+                      00138 ;  initialize variables
+000A   0C01           00139                 movlw   H'01'
+000B   0021           00140                 movwf   TMR0            ; set TMR0 above zero so initial wait period occurs
+000C   0C01           00141                 movlw   H'01'           ; inverted from 'FE' cause we Common anode now
+000D   002B           00142                 movwf   display         ; initializes 'display' selected to first display.
+000E   0C00           00143                 movlw   BLANK           ; put all displays to blank, no visible segments
+000F   002C           00144                 movwf   digit1
+0010   002D           00145                 movwf   digit2
+0011   002E           00146                 movwf   digit3
+0012   002F           00147                 movwf   digit4
+0013   0C0C           00148                 movlw   MAXNTHS         ; set timer variables to initial values
+0014   0030           00149                 movwf   sec_nth
+0015   0CC4           00150                 movlw   MAXSECS
+0016   0031           00151                 movwf   seconds
+0017   0CC4           00152                 movlw   MAXMINS
+0018   0032           00153                 movwf   minutes
+0019   0CFF           00154                 movlw   H'FF'           ; hours start at 12 which is max at FF
+001A   0033           00155                 movwf   hours
+001B   0C00           00156                 movlw   H'00'
+001C   0029           00157                 movwf   flags
+                      00158 ;
+                      00159 ;
+                      00160 ;
+001D                  00161 MAIN 
+                      00162 ;
+001D                  00163 TMR0_FILL
+001D   0201           00164                 movf    TMR0,0
+001E   0743           00165                 btfss   STATUS,Z        ; skip if TMR0 has not rolled over
+                      00166                                         ; TMR0 is left free running to not lose clock cycles on writes
+001F   0A1D           00167                 goto    TMR0_FILL       
+                      00168                                         ;
+0020   03F0           00169                 incfsz  sec_nth,1       ; add 1 to nths, n X nths = 1 sec, n is based on prescaler
+0021   0A53           00170                 goto    TIME_DONE
+0022   0C0C           00171                 movlw   MAXNTHS
+0023   0030           00172                 movwf   sec_nth         ; restore sec_nths variable for next round
+                      00173 ;
+0024                  00174 CHECK_SW
+0024   07E9           00175                 btfss   flags,SW_ON ; if no switches pressed, bypass this
+0025   0A3B           00176                 goto    SET_TIME
+0026   0689           00177                 btfsc   flags,SW1
+0027   0A3B           00178                 goto    SET_TIME    ; if seconds display is pressed, do not change time
+0028   0CC4           00179                 movlw   MAXSECS
+MPASM  5.20                      NIXIEF54.ASM   4-13-2021  23:21:24         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0029   0031           00180                 movwf   seconds     ; reset seconds to zero when setting clock
+002A   0C7F           00181                 movlw   H'7F'
+002B   0030           00182                 movwf   sec_nth     ; advance second timer 1/2 second to speed time setting
+002C   07A9           00183                 btfss   flags,SW2
+002D   0A34           00184                 goto    HOURSET     ; minutes do not need changing, check hours
+002E   0CAF           00185                 movlw   H'AF'
+002F   0030           00186                 movwf   sec_nth     ; advances timer faster when setting minutes
+0030   03F2           00187                 incfsz  minutes,1
+0031   0A34           00188                 goto    HOURSET
+0032   0CC4           00189                 movlw   MAXMINS
+0033   0032           00190                 movwf   minutes
+                      00191 ;
+0034                  00192 HOURSET 
+0034   06A9           00193                 btfsc   flags,SW2
+0035   0A5F           00194                 goto    CHECK_TIME      ; not changing hours
+0036   03F3           00195                 incfsz  hours,1
+0037   0A5F           00196                 goto    CHECK_TIME
+0038   0CF4           00197                 movlw   MAXHRS
+0039   0033           00198                 movwf   hours
+003A   0A5F           00199                 goto    CHECK_TIME      ; since no timing is required, go to display changes
+                      00200 ;
+003B                  00201 SET_TIME
+                      00202 ;this code only runs once a second and updates the stored time
+003B   0509           00203                 bsf     flags,SEC       ; seconds, if displayed, should be updated. 
+003C   0569           00204                 bsf     flags,CHG       ; a flag change was made.
+003D   03F1           00205                 incfsz  seconds,1       ;  add 1 to seconds
+003E   0A53           00206                 goto    TIME_DONE       ; if seconds did not rollover, short circuit
+003F   0CC4           00207                 movlw   MAXSECS
+0040   0031           00208                 movwf   seconds         ; restore seconds variable for next round
+                      00209 ;
+0041   0529           00210                 bsf     flags,MIN       ; minutes, if displayed, should be updated
+0042   0569           00211                 bsf     flags,CHG
+0043   0C09           00212                 movlw   ADJMIN
+0044   00B0           00213                 subwf   sec_nth,1       ; subtraction needed adjustment for each minute
+0045   03F2           00214                 incfsz  minutes,1       ; add 1 to minutes
+0046   0A53           00215                 goto    TIME_DONE
+0047   0CC4           00216                 movlw   MAXMINS
+0048   0032           00217                 movwf   minutes         ; restore minutes variable for next hour countdown
+                      00218 ;
+0049   0549           00219                 bsf     flags,HRS
+004A   0569           00220                 bsf     flags,CHG
+004B   0C22           00221                 movlw   ADJHR
+004C   01F0           00222                 addwf   sec_nth,1       ; add needed adjustment for each hour
+004D   03F3           00223                 incfsz  hours,1         ; add 1 to hours
+004E   0A53           00224                 goto    TIME_DONE
+004F   0CF4           00225                 movlw   MAXHRS
+0050   0033           00226                 movwf   hours           ; restore hours variable for next round
+0051   0C03           00227                 movlw   ADJDAY
+0052   00B0           00228                 subwf   sec_nth,1       ; subtraction adjustment for each 1/2 day rollover
+                      00229 ;
+0053                  00230 TIME_DONE
+0053   0769           00231                 btfss   flags,CHG       ; if any change in stored clock time, 
+0054   0A7D           00232                 goto    CYCLE           ;  then postpone cycling digits until display vars are set
+                      00233 ;
+                      00234 ;
+0055                  00235 CHECK_SECONDS
+0055   0789           00236                 btfss   flags,SW1
+0056   0A5F           00237                 goto    CHECK_TIME
+0057   0C00           00238                 movlw   H'00'
+0058   002D           00239                 movwf   digit2          ; 3rd digit variable used to store temp hex value for hours disp
+MPASM  5.20                      NIXIEF54.ASM   4-13-2021  23:21:24         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                            lay
+0059   002E           00240                 movwf   digit3
+005A   002F           00241                 movwf   digit4
+005B   0CC4           00242                 movlw   MAXSECS
+005C   0091           00243                 subwf   seconds,0
+005D   002C           00244                 movwf   digit1          ; 1st digit variable temporarily holds hex value for seconds dis
+                            play
+005E   0A68           00245                 goto    SPLIT_HEX
+                      00246 ;
+005F                  00247 CHECK_TIME
+005F   0C00           00248                 movlw   H'00'
+0060   002F           00249                 movwf   digit4          ; zero out tens places in case there is no tens increment
+0061   002D           00250                 movwf   digit2
+0062   0CF3           00251                 movlw   MINHRS
+0063   0093           00252                 subwf   hours,0
+0064   002E           00253                 movwf   digit3          ; 'digit3' temporarily holds hex value for hours
+0065   0CC4           00254                 movlw   MAXMINS
+0066   0092           00255                 subwf   minutes,0
+0067   002C           00256                 movwf   digit1          ; 'digit1' temporarily holds hex value for minutes
+                      00257 ;
+                      00258 ;
+                      00259 ;
+0068                  00260 SPLIT_HEX       ;  this loop puts min1s->digit1, min10s->digit2, hr1s->digit3, hr10s->digit4
+                      00261 ;
+0068   0C02           00262                 movlw   H'02'
+0069   0035           00263                 movwf   count           ; loop to convert each number - seconds - or minutes and hours
+                      00264                                         ;1st time through, FSR = digit1, 2nd time FSR = digit3
+006A   0C0C           00265                 movlw   digit1          ; 
+006B   0024           00266                 movwf   FSR             ; address of digit1 into File Select Register enables POINTER
+006C   0A6F           00267                 goto    LOOP            ; this loop is used to modify the minutes/seconds place
+                      00268 ;
+006D                  00269 LOOP2   
+006D   0C0E           00270                 movlw   digit3
+006E   0024           00271                 movwf   FSR     ; this loop is used to modify the hours place
+                      00272 ;
+006F                  00273 LOOP
+006F   0C0A           00274                 movlw   D'10'
+0070   00A0           00275                 subwf   POINTER,1       ; find out how many tens in number,
+0071   0603           00276                 btfsc   STATUS,C        ; was a borrow needed?
+0072   0A75           00277                 goto    INCREMENT_10S   ;  if not, add 1 to tens position
+0073   01E0           00278                 addwf   POINTER,1       ;  if so, do not increment tens place, add ten back on to get 1s
+0074   0A79           00279                 goto    NEXT_DIGIT
+                      00280 ;
+0075                  00281 INCREMENT_10S
+0075   02A4           00282                 incf    FSR,1           ; bump address pointed to from 1s position to 10s
+0076   02A0           00283                 incf    POINTER,1       ; add 1 to 10s position as determined by previous subtract
+0077   00E4           00284                 decf    FSR,1           ; put POINTER value back to 1s place for next subtraction
+0078   0A6F           00285                 goto    LOOP            ; go back and keep subtracting until finished
+                      00286 ;
+0079                  00287 NEXT_DIGIT
+0079   02F5           00288                 decfsz  count,1
+007A   0A6D           00289                 goto    LOOP2
+                      00290 
+007B                  00291 CLEAR_FLAGS
+007B   0CF0           00292                 movlw   H'F0'
+007C   0169           00293                 andwf   flags,1      ; clear the lower 4 flag bits to show update status
+                      00294 ;
+                      00295 ;****************************************************************************************
+007D                  00296 CYCLE
+                      00297 ;reads the switches every refresh (4ms), handles muxing and displaying digits
+MPASM  5.20                      NIXIEF54.ASM   4-13-2021  23:21:24         PAGE  6
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+007D   0C0F           00298                 movlw   H'0F'
+007E   0169           00299                 andwf   flags,1         ; reset switch flags to zero
+007F   0206           00300                 movf    PORT_B,0        ; read switches into var register
+0080   0034           00301                 movwf   var
+0081                  00302 SWITCH1
+0081   0734           00303                 btfss   var,1           ;check if sw1 pressed and so on for sw2 and sw3
+0082   0A86           00304                 goto    SWITCH2
+0083   0569           00305                 bsf     flags,CHG
+0084   0589           00306                 bsf     flags,SW1
+0085   05E9           00307                 bsf     flags,SW_ON
+                      00308 ;
+0086                  00309 SWITCH2 
+0086   0754           00310                 btfss   var,2
+0087   0A8B           00311                 goto    SWITCH3
+0088   0569           00312                 bsf     flags,CHG
+0089   05A9           00313                 bsf     flags,SW2
+008A   05E9           00314                 bsf     flags,SW_ON
+008B                  00315 SWITCH3 
+008B   0774           00316                 btfss   var,3
+008C   0A90           00317                 goto    BLANKING
+008D   0569           00318                 bsf     flags,CHG
+008E   05C9           00319                 bsf     flags,SW3
+008F   05E9           00320                 bsf     flags,SW_ON
+                      00321 ;
+0090                  00322 BLANKING
+                      00323 ; anode blanking busywait assuming 1 microsec per instruction 
+0090   0C00           00324                 movlw   BLANK
+0091   0025           00325                 movwf   PORT_A
+0092   0C96           00326                 movlw   D'150'
+0093   0035           00327                 movwf   count
+0094                  00328 BLOOP
+0094   02F5           00329                 decfsz  count,1
+0095   0A94           00330                 goto    BLOOP
+                      00331 
+0096                  00332 UPDATE
+                      00333 ;determine which display needs updating and cycle it on, 'digitx' contains the display bits
+0096   060B           00334                 btfsc   display,0  ; if 1st display, get 1st digit value into w
+0097   020F           00335                 movf    digit4,0
+0098   062B           00336                 btfsc   display,1  ; if 2nd display, get 2nd digit ''
+0099   020E           00337                 movf    digit3,0
+009A   064B           00338                 btfsc   display,2  ; if 3rd display, get 3rd digit ''
+009B   020D           00339                 movf    digit2,0
+009C   066B           00340                 btfsc   display,3  ; if 4th display, get 4th digit ''
+009D   020C           00341                 movf    digit1,0
+                      00342 ;rotate digit left four times before display
+009E   0034           00343                 movwf   var
+009F   0374           00344                 rlf     var, 1
+00A0   0374           00345                 rlf     var, 1
+00A1   0374           00346                 rlf     var, 1
+00A2   0354           00347                 rlf     var, 0
+00A3   0026           00348                 movwf   PORT_B     ; put the number out to display
+                      00349 
+                      00350 
+00A4   06F0           00351                 btfsc   sec_nth,7  ; sets colon decimal on %50 duty using highest bit
+00A5   0506           00352                 bsf     PORT_B,0   ; nice because we don't yet know if colon logic is p or n
+                      00353 
+                      00354 
+00A6   020B           00355                 movf    display,0  ; get anode needing cycle on
+00A7   0025           00356                 movwf   PORT_A     ; enables anode display
+                      00357 
+MPASM  5.20                      NIXIEF54.ASM   4-13-2021  23:21:24         PAGE  7
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00A8   036B           00358                 rlf     display,1  ; rotate display "on" bit to next position
+00A9   068B           00359                 btfsc   display,4  ; skip if cycle complete not complete
+00AA   052B           00360                 bsf     display,1  ; if complete cycle, set display back to 1st (bit 0 set)
+00AB   048B           00361                 bcf     display,4  ; clear bit 4 anyway
+                      00362 ;
+                      00363 ;
+                      00364 ;
+00AC   0A1D           00365         goto    MAIN
+                      00366 
+01FF                  00367         org     PIC54
+01FF   0A00           00368         goto    START
+                      00369 ;
+                      00370     END
+MPASM  5.20                      NIXIEF54.ASM   4-13-2021  23:21:24         PAGE  8
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+ADJDAY                            00000003
+ADJHR                             00000022
+ADJMIN                            00000009
+BLANK                             00000000
+BLANKING                          00000090
+BLOOP                             00000094
+C                                 00000000
+CARRY                             00000000
+CHECK_SECONDS                     00000055
+CHECK_SW                          00000024
+CHECK_TIME                        0000005F
+CHG                               00000003
+CLEAR_FLAGS                       0000007B
+COLON                             00000001
+CYCLE                             0000007D
+DC                                00000001
+DCARRY                            00000001
+DISP1                             000000FE
+DISP2                             000000FD
+DISP3                             000000FB
+DISP4                             000000F7
+DISPOFF                           00000000
+FSR                               00000004
+HOURSET                           00000034
+HRS                               00000002
+INCREMENT_10S                     00000075
+LOOP                              0000006F
+LOOP2                             0000006D
+MAIN                              0000001D
+MAXHRS                            000000F4
+MAXMINS                           000000C4
+MAXNTHS                           0000000C
+MAXSECS                           000000C4
+MIN                               00000001
+MINHRS                            000000F3
+NEXT_DIGIT                        00000079
+PA0                               00000005
+PA1                               00000006
+PA2                               00000007
+PC                                00000002
+PD                                00000003
+PIC54                             000001FF
+PIC56                             000003FF
+POINTER                           00000000
+PORT_A                            00000005
+PORT_B                            00000006
+P_DOWN                            00000003
+SEC                               00000000
+SET_TIME                          0000003B
+SPLIT_HEX                         00000068
+START                             00000000
+STATUS                            00000003
+SW1                               00000004
+SW2                               00000005
+SW3                               00000006
+SWITCH                            0000000E
+SWITCH1                           00000081
+SWITCH2                           00000086
+SWITCH3                           0000008B
+SW_ON                             00000007
+MPASM  5.20                      NIXIEF54.ASM   4-13-2021  23:21:24         PAGE  9
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+TIME_DONE                         00000053
+TMR0                              00000001
+TMR0_FILL                         0000001D
+TO                                00000004
+T_OUT                             00000004
+UPDATE                            00000096
+Z                                 00000002
+Z_bit                             00000002
+__16F54                           00000001
+count                             00000015
+count2                            00000016
+digit1                            0000000C
+digit2                            0000000D
+digit3                            0000000E
+digit4                            0000000F
+display                           0000000B
+flags                             00000009
+hours                             00000013
+keys                              00000008
+minutes                           00000012
+sec_nth                           00000010
+seconds                           00000011
+var                               00000014
+
+
+MEMORY USAGE MAP ('X' = Used,  '-' = Unused)
+
+0000 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0040 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0080 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXX--- ----------------
+01C0 : ---------------- ---------------- ---------------- ---------------X
+0FC0 : ---------------- ---------------- ---------------- ---------------X
+
+All other memory blocks unused.
+
+Program Memory Words Used:   174
+Program Memory Words Free:   338
+
+
+Errors   :     0
+Warnings :     0 reported,     0 suppressed
+Messages :     0 reported,     0 suppressed
+
+

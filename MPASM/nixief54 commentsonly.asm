@@ -2,7 +2,7 @@
 ;********************************************************************
 	LIST    P = 16F54, n = 66
 ;
-;                      Nixie Clock
+;                      Clock
 ;*********************************************************************
 ;
 ;			PROGRAM DESCRIPTION
@@ -21,18 +21,17 @@
 ; bits of Port B in binary-coded decimal (BCD) for interfacing the K155ID1 driver. The
 ; colon is controlled by RB0, while RB1-3 act as inputs for switches to set the time.
 ;  The four common anodes are attached to the four Port A pins through level shifters.
-; RA0 and RA2 for 10s place in hours and mins, RA1 RA3 for 1s place in hours and mins.  
+; RA0 for CA0, RA1/CA1... through CA3.  
 ;
 ;  SWITCHES
-; Port B is connected to switches such that SWX connects RBX to VCC (X=1,2,3) 
+; Port B is connected to switches such that SWX connects RBX to VCC (X=0,1,2,3) 
 ; SW2 and SW3 allow the user to set the minutes and hours respectively, and SW1 sets the
-; display to show seconds. 
+; display to show seconds. The optional SW0 can be connected for use as a reset switch.
 ;
-; TODO:	invert 'display' use cases, port a outputs -- done
-;	fix hex outputs to port b -- done: removed routine for converting digits 
-;				now implemented by 4x left rotate during refresh
-;	incorporate blanking -- done
-; 	add cathode poisoning prevention routine --yikes
+; In the original code, all I/O pins are already used for the muxed displays, so the
+; switches are read in alternatingly through software. Port B pins are changed to inputs 
+; momentarily during read and changed back to outputs during display.
+;
 ;
 ;
 ;**************************   Header *************************
@@ -65,7 +64,18 @@ PA0     equ     5       	;16C5X Status bits
 PA1     equ     6      		;16C5X Status bits
 PA2     equ     7       	;16C5X Status bits
 ;
+ZERO	equ		H'7E'
+ONE	equ		H'0C'
+TWO	equ		H'B6'
+THREE	equ		H'9E'
+FOUR	equ		H'CC'
+FIVE	equ		H'DA'
+SIX	equ		H'FA'		; Mapping of segments for display (PORT_B)
+SEVEN	equ		H'0E'
+EIGHT	equ		H'FE'
+NINE	equ		H'CE'
 COLON	equ		H'01'
+T	equ		H'F0'
 BLANK	equ		H'00'
 ;
 MAXNTHS	equ		D'12'		; constants for timer variable count up
@@ -81,7 +91,7 @@ DISP1	equ		B'11111110'
 DISP2	equ		B'11111101'	; Mapping of Active Display Selection (PORT_A)
 DISP3	equ		B'11111011'
 DISP4	equ		B'11110111'
-DISPOFF	equ		H'00'		;inverted cause now port A controls anodes instead of cathodes
+DISPOFF	equ		H'FF'
 SWITCH	equ		B'00001110'	; Activate RB1-3 for switch inputs     
 ;
 ;  Flag bit assignments
@@ -98,7 +108,7 @@ SW_ON	equ		H'7'		; a switch has been pressed
 keys	equ		H'08'		; variable location - which keys are pressed? bit0/sw1... 
 flags	equ     	H'09'		; bit flags; 0-SEC, 1-MIN, 2-HRS, 3-CHG, 4-SW1, 5-SW2, 6-SW3
 ;	equ		H'0A'		; Not Used
-display equ     	H'0B'		; variable location - which digit to update 
+display equ     	H'0B'		; variable location - which display to update
 digit1	equ		H'0C'		; Rightmost display value
 digit2	equ		H'0D'		; Second display from right
 digit3	equ		H'0E'		; Third    "       "    "
@@ -119,27 +129,24 @@ count2	equ		H'16'		; 2nd loop counter for nested loops
 ;
 ;  Initialize Ports all outputs, blank display
 ;
-
-	__config	1	; set oscillator mode to XT, WDT to off
 START   
-		movlw	H'03'   	; set option register, transition on CLKOUT,
+		movlw	H'03'   	; set option register, transition on clock,
 		option			; Prescale TMR0, 1:16 (contents of the W register
 					; will be transferred to the Option register)
 ;
 		movlw	0
-		tris	PORT_A		; Set Port A common anode pins to outputs
-		movlw	SWITCH		; set PB1-PB3 as inputs and rest of Port B as output
+		tris	PORT_A		; Set all port pins as outputs
 		tris	PORT_B
 		movlw	BLANK
 		movwf	PORT_B		; Blank the display
-		bcf	STATUS,PA1	; set memory to page 0
+		bcf	STATUS,PA1	;set memory to page 0
 		bcf	STATUS,PA0
 ;
 ;  initialize variables
 		movlw	H'01'
 		movwf	TMR0		; set TMR0 above zero so initial wait period occurs
-		movlw	H'01'		; inverted from 'FE' cause we Common anode now
-		movwf	display		; initializes 'display' selected to first display.
+		movlw	H'FE'
+		movwf	display		; initializes display selected to first display.
 		movlw	BLANK		; put all displays to blank, no visible segments
 		movwf	digit1
 		movwf	digit2
@@ -165,7 +172,7 @@ TMR0_FILL
 		btfss	STATUS,Z  	; skip if TMR0 has not rolled over
 					; TMR0 is left free running to not lose clock cycles on writes
 		goto	TMR0_FILL	
-					;
+;
 		incfsz	sec_nth,1  	; add 1 to nths, n X nths = 1 sec, n is based on prescaler
 		goto	TIME_DONE
 		movlw	MAXNTHS
@@ -199,11 +206,10 @@ HOURSET
 		goto	CHECK_TIME 	; since no timing is required, go to display changes
 ;
 SET_TIME
-;this code only runs once a second and updates the stored time
-		bsf	flags,SEC 	; seconds, if displayed, should be updated. 
+		bsf	flags,SEC 	; seconds, if displayed, should be updated
 		bsf	flags,CHG 	; a flag change was made.
 		incfsz	seconds,1 	;  add 1 to seconds
-		goto	TIME_DONE	; if seconds did not rollover, short circuit
+		goto	TIME_DONE
 		movlw	MAXSECS
 		movwf	seconds   	; restore seconds variable for next round
 ;
@@ -228,11 +234,12 @@ SET_TIME
 		subwf	sec_nth,1 	; subtraction adjustment for each 1/2 day rollover
 ;
 TIME_DONE
-		btfss	flags,CHG	; if any change in stored clock time, 
-	 	goto	CYCLE		;  then postpone cycling digits until display vars are set
+		btfss	flags,CHG	; if no switches or potentially dislayed numbers were
+	 	goto	CYCLE		;  changed, then skip updating display variables
 ;
 ;
 CHECK_SECONDS
+;  if seconds is button was pushed and not mode display seconds
 		btfss	flags,SW1
 		goto	CHECK_TIME
 		movlw	H'00'
@@ -250,20 +257,21 @@ CHECK_TIME
 		movwf	digit2
 		movlw	MINHRS
 		subwf	hours,0
-		movwf	digit3    	; 'digit3' temporarily holds hex value for hours
+		movwf	digit3    	; 3rd digit variable temporarily holds hex value for hours
 		movlw	MAXMINS
 		subwf	minutes,0
-		movwf	digit1	  	; 'digit1' temporarily holds hex value for minutes
+		movwf	digit1	  	; 1st digit temporarily holds hex value for minutes
 ;
 ;
 ;
-SPLIT_HEX	;  this loop puts min1s->digit1, min10s->digit2, hr1s->digit3, hr10s->digit4
+SPLIT_HEX	;  split into two hex display variables and write
 ;
 		movlw	H'02'
 		movwf	count		; loop to convert each number - seconds - or minutes and hours
-					;1st time through, FSR = digit1, 2nd time FSR = digit3
+
+;1st time through, FSR = digit1, 2nd time FSR = digit3
 		movlw	digit1		; 
-		movwf	FSR		; address of digit1 into File Select Register enables POINTER
+		movwf	FSR			; address of digit1 into File Select Register enables POINTER
 		goto	LOOP		; this loop is used to modify the minutes/seconds place
 ;
 LOOP2	
@@ -279,7 +287,7 @@ LOOP
 		goto	NEXT_DIGIT
 ;
 INCREMENT_10S
-		incf	FSR,1	  	; bump address pointed to from 1s position to 10s
+		incf	FSR,1	  	; bump address pointed to from 1s positoion to 10s
 		incf	POINTER,1 	; add 1 to 10s position as determined by previous subtract
 		decf	FSR,1	  	; put POINTER value back to 1s place for next subtraction
 		goto    LOOP	  	; go back and keep subtracting until finished
@@ -287,20 +295,50 @@ INCREMENT_10S
 NEXT_DIGIT
 		decfsz	count,1
 		goto	LOOP2
+;
+CONVERT_HEX_TO_DISPLAY  ; converts hex number in digit variables to decimal display code
+		movlw	digit1	
+		movwf	FSR	; put the address of the first digit into the FSR to enable POINTER
+		movlw	H'04'
+		movwf	count	; prepare count variable to loop for all four displays
+NEXT_HEX
+		movf	POINTER,0    ; get the hex value of the current digit variable
+		call	RETURN_CODE  ; call for the hex to decimal display conversion
+		movwf	POINTER	     ; put the returned display code back into the digit variable
+		incf	FSR,1	     ; increment the pointer to the next digit variable address
+		decfsz	count,1	     ; allow only count(4) times through loop
+		goto	NEXT_HEX
+;
+FIX_DISPLAY
+		movlw	ZERO
+		subwf	digit4,0
+		btfss	STATUS,Z
+		goto	FIX_SEC
+		movlw	BLANK
+		movwf	digit4
 
+FIX_SEC	
+		btfss	flags,SW1
+		goto	CLEAR_FLAGS
+		movwf	digit3	
+;
 CLEAR_FLAGS
 		movlw	H'F0'
 		andwf	flags,1	     ; clear the lower 4 flag bits to show update status
 ;
-;****************************************************************************************
 CYCLE
-;reads the switches every refresh (4ms), handles muxing and displaying digits
+		movlw	DISPOFF
+		movwf	PORT_A	   	; Turn off LED Displays
+		movlw	SWITCH
+		tris	PORT_B	   	; Set some port B pins as switch inputs
 		movlw	H'0F'
 		andwf	flags,1	   	; reset switch flags to zero
-		movf	PORT_B,0	; read switches into var register
+		nop		   	; nop may not be needed, allows old outputs to bleed
+		nop		        ; off through 10k R before reading port pins
+		nop
+		movf	PORT_B,0
 		movwf	var
-SWITCH1
-		btfss	var,1		;check if sw1 pressed and so on for sw2 and sw3
+		btfss	var,1
 		goto	SWITCH2
 		bsf	flags,CHG
 		bsf	flags,SW1
@@ -314,56 +352,56 @@ SWITCH2
 		bsf	flags,SW_ON
 SWITCH3	
 		btfss	var,3
-		goto	BLANKING
+		goto	SETPORT
 		bsf	flags,CHG
 		bsf	flags,SW3
 		bsf	flags,SW_ON
 ;
-BLANKING
-; anode blanking busywait assuming 1 microsec per instruction 
+SETPORT	
+		movlw	H'00'
+		tris	PORT_B
 		movlw	BLANK
-		movwf	PORT_A
-		movlw 	D'150'
-		movwf	count
-BLOOP
-		decfsz 	count,1
-		goto	BLOOP
-
-UPDATE
-;determine which display needs updating and cycle it on, 'digitx' contains the display bits
-		btfsc	display,0  ; if 1st display, get 1st digit value into w
+		movwf	PORT_B
+;
+;   determine which display needs updating and cycle it on
+		btfss	display,0  ; if 1st display, get 1st digit
 		movf	digit4,0
-		btfsc	display,1  ; if 2nd display, get 2nd digit ''
+		btfss	display,1  ; if 2nd display, get 2nd digit
 		movf	digit3,0
-		btfsc	display,2  ; if 3rd display, get 3rd digit ''
+		btfss	display,2  ; if 3rd display, get 3rd digit
 		movf	digit2,0
-		btfsc	display,3  ; if 4th display, get 4th digit ''
+		btfss	display,3  ; if 4th display, get 4th digit
 		movf	digit1,0
-;rotate digit left four times before display
-		movwf	var
-		rlf	var, 1
-		rlf	var, 1
-		rlf	var, 1
-		rlf	var, 0
 		movwf	PORT_B	   ; put the number out to display
-
-
-		btfsc	sec_nth,7  ; sets colon decimal on %50 duty using highest bit
-		bsf	PORT_B,0   ; nice because we don't yet know if colon logic is p or n
-
-
-		movf	display,0  ; get anode needing cycle on
-		movwf	PORT_A	   ; enables anode display
-
-		rlf	display,1  ; rotate display "on" bit to next position
-		btfsc	display,4  ; skip if cycle complete not complete
-		bsf	display,1  ; if complete cycle, set display back to 1st (bit 0 set)
-		bcf	display,4  ; clear bit 4 anyway
+		btfsc	sec_nth,7
+		bsf		PORT_B,0   ; sets colon decimal on %50 duty using highest bit
+		movf	display,0  ; get display needing cycle on
+		movwf	PORT_A	   ; enables proper display
+		movwf	display    ; returns old w if not done, new w if resetting display
+		rlf		display,1  ; rotate display "on" bit to next position
+		bsf		display,0  ; assures a 1 on lowest position since rotated carry is zero
+		btfss	display,4  ; check if last display was already updated
+		bcf		display,0  ; if it was, set display back to 1st (bit 0 set)
 ;
 ;
 ;
         goto    MAIN
-
+;
+RETURN_CODE
+;
+		addwf	PC,1
+		retlw	ZERO
+		retlw	ONE
+		retlw	TWO
+		retlw	THREE
+		retlw	FOUR
+		retlw	FIVE
+		retlw	SIX
+		retlw	SEVEN
+		retlw	EIGHT
+		retlw	NINE
+;
+;
         org     PIC54
         goto    START
 ;
