@@ -1,4 +1,4 @@
-MPASM  5.20                       CLOCK54.ASM   4-13-2021  23:26:36         PAGE  1
+MPASM  5.20                       CLOCK54.ASM   4-14-2021  21:36:37         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -64,7 +64,7 @@ Warning[215]: Processor superseded by command line.  Verify processor symbol.
   00000001            00057 DC      equ     1
   00000002            00058 Z_bit   equ     2       ; Bit 2 of F3 is Zero Bit
   00000002            00059 Z       equ     2
-MPASM  5.20                       CLOCK54.ASM   4-13-2021  23:26:36         PAGE  2
+MPASM  5.20                       CLOCK54.ASM   4-14-2021  21:36:37         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -130,7 +130,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
   0000000F            00116 digit4  equ     H'0F'   ; Fourth (and Leftmost)
                       00117 ;
                       00118 ;       timer variables start at a number that allows rollover in sync with time rollover,
-MPASM  5.20                       CLOCK54.ASM   4-13-2021  23:26:36         PAGE  3
+MPASM  5.20                       CLOCK54.ASM   4-14-2021  21:36:37         PAGE  3
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -196,7 +196,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
 0020   0A52           00176         goto    TIME_DONE
 0021   0C0C           00177         movlw   MAXNTHS
 0022   0030           00178         movwf   sec_nth  ; restore sec_nths variable for next round
-MPASM  5.20                       CLOCK54.ASM   4-13-2021  23:26:36         PAGE  4
+MPASM  5.20                       CLOCK54.ASM   4-14-2021  21:36:37         PAGE  4
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -262,7 +262,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
 0053   0A8F           00236         goto    CYCLE           ;  changed, then skip updating display variables
                       00237 ;
                       00238 ;
-MPASM  5.20                       CLOCK54.ASM   4-13-2021  23:26:36         PAGE  5
+MPASM  5.20                       CLOCK54.ASM   4-14-2021  21:36:37         PAGE  5
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -328,7 +328,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
 007A                  00296 CONVERT_HEX_TO_DISPLAY  ; converts hex number in digit variables to decimal display code
 007A   0C0C           00297         movlw   digit1  
 007B   0024           00298         movwf   FSR     ; put the address of the first digit into the FSR to enable POINTER
-MPASM  5.20                       CLOCK54.ASM   4-13-2021  23:26:36         PAGE  6
+MPASM  5.20                       CLOCK54.ASM   4-14-2021  21:36:37         PAGE  6
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -394,7 +394,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
 00AB   0C00           00356         movlw   BLANK
 00AC   0026           00357         movwf   PORT_B
                       00358 ;
-MPASM  5.20                       CLOCK54.ASM   4-13-2021  23:26:36         PAGE  7
+MPASM  5.20                       CLOCK54.ASM   4-14-2021  21:36:37         PAGE  7
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -443,7 +443,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
 01FF   0A00           00399         goto    START
                       00400 ;
                       00401     END
-MPASM  5.20                       CLOCK54.ASM   4-13-2021  23:26:36         PAGE  8
+MPASM  5.20                       CLOCK54.ASM   4-14-2021  21:36:37         PAGE  8
 
 
 SYMBOL TABLE
@@ -509,7 +509,7 @@ RTCC_FILL                         0000001C
 SEC                               00000000
 SETPORT                           000000A9
 SET_TIME                          0000003A
-MPASM  5.20                       CLOCK54.ASM   4-13-2021  23:26:36         PAGE  9
+MPASM  5.20                       CLOCK54.ASM   4-14-2021  21:36:37         PAGE  9
 
 
 SYMBOL TABLE

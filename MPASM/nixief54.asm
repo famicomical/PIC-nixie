@@ -15,12 +15,12 @@
 ;                       Hardware Description
 ;
 ;  DISPLAYS
-; Four IN-14 Nixie Neon Tubes are multiplexed. The cathodes are tied together, with
-; the anode pins broken out separately.  The display appears as a clock
+; Four IN-14 Nixie Neon Tubes are multiplexed. The cathodes are tied together while
+; the anode pins broken out separately.  The time is displayed on four tubes
 ; with an optional center neon bulb ( 12:34 ).  The digits are output to the upper 4
 ; bits of Port B in binary-coded decimal (BCD) for interfacing the K155ID1 driver. The
 ; colon is controlled by RB0, while RB1-3 act as inputs for switches to set the time.
-;  The four common anodes are attached to the four Port A pins through level shifters.
+; The four common anodes are attached to the four Port A pins through level shifters.
 ; RA0 and RA2 for 10s place in hours and mins, RA1 RA3 for 1s place in hours and mins.  
 ;
 ;  SWITCHES
@@ -32,7 +32,12 @@
 ;	fix hex outputs to port b -- done: removed routine for converting digits 
 ;				now implemented by 4x left rotate during refresh
 ;	incorporate blanking -- done
-; 	add cathode poisoning prevention routine --yikes
+; 	add cathode poisoning prevention routine -- counter variable poison gets 
+;		incremented every minute. if equal 20 then run poison prevention
+;		by hijacking the 'cycle' execution with a loop that runs each
+;		digit on each tube for 1 full second. after all 40 cathodes are 
+;		outgassed then 'poison' gets reset. pressing any switch resets
+;		'poison' and should end the outgassing routine if it is running.
 ;
 ;
 ;**************************   Header *************************
@@ -113,14 +118,15 @@ hours	equ		H'13'  		; hours
 var	equ		H'14'		; variable for misc math computations
 count	equ		H'15'		; loop counter variable
 count2	equ		H'16'		; 2nd loop counter for nested loops
-
+poison	equ		H'17'		; poisoning minute counter, bit 6 and 7 are status and ready bit
+ppcount	equ		H'18'		; loop variable for poison prevention routine 
 ;
 ;********************************************************************************
 ;
 ;  Initialize Ports all outputs, blank display
 ;
 
-	__config	1	; set oscillator mode to XT, WDT to off
+	__config	1	; set oscillator mode to XT, Watchdog Timer is off
 START   
 		movlw	H'03'   	; set option register, transition on CLKOUT,
 		option			; Prescale TMR0, 1:16 (contents of the W register
@@ -155,6 +161,7 @@ START
 		movwf	hours
 		movlw	H'00'
 		movwf	flags
+		movwf	poison
 ;
 ;
 ;
@@ -172,7 +179,7 @@ TMR0_FILL
 		movwf	sec_nth  	; restore sec_nths variable for next round
 ;
 CHECK_SW
-		btfss	flags,SW_ON ; if no switches pressed, bypass this
+		btfss	flags,SW_ON ; if no switches pressed, adjust time naturally
 		goto	SET_TIME
 		btfsc	flags,SW1
 		goto	SET_TIME    ; if seconds display is pressed, do not change time
@@ -211,6 +218,7 @@ SET_TIME
 		bsf	flags,CHG
 		movlw	ADJMIN
 		subwf	sec_nth,1 	; subtraction needed adjustment for each minute
+		incf	poison,1	; add 1 to poison counter
 		incfsz	minutes,1  	; add 1 to minutes
 		goto	TIME_DONE
 		movlw	MAXMINS
@@ -229,11 +237,50 @@ SET_TIME
 ;
 TIME_DONE
 		btfss	flags,CHG	; if any change in stored clock time, 
-	 	goto	CYCLE		;  then postpone cycling digits until display vars are set
+	 	goto	CYCLE		;  then postpone cycling digits until display vars are set in next few subs
 ;
+CHECK_POISON
+		movlw	D'20'		;20 min(/4) of on-time. 1/4 factor due to muxing
+		subwf	poison, 0
+		btfss	STATUS, C	;if carry is zero, the result is negative
+		goto	CHECK_SECONDS	;so it is not time to run the poison prevention routine
+;
+		bsf	poison, 6	;this sub runs every second, so inidicate a second has passed
+;
+		btfss	poison, 7	;if poison prevention is not already running
+		goto	INITPOISON	; initialize the digits
+
+		;poison loop logic here: cycle digits, clear 'poison' and goto check secs if done outgassing
+		; on first run, a '0' has already been displayed at the hr10s digit for 1 sec, and 'display' is set on digit3.
+		incf	POINTER,1	; increment cathode for previously displayed tube
+		decf	FSR,1		; move up to next tube
+
+		movlw	display		; check cycle for wraparound 
+		xorwf	FSR,0		; set status bits for FSR='digit4'-4='display'
+		movlw	D'4'		; prepare w to bump FSR back
+		btfsc	STATUS,Z	; if FSR!='display' skip bumping
+		addwf	FSR,1		;
+
+		decfsz	ppcount,1	
+		goto	CLEAR_FLAGS
+
+		clrf	poison		;loop has ended, reset the poison timer
+		goto 	CHECK_SECONDS	;ensure that clock resumes normal display immediately
+;
+
+INITPOISON
+		bsf 	poison, 7	
+		movlw	digit4
+		movwf	FSR
+		clrf	POINTER
+		movlw	D'40'
+		movwf	ppcount
+		clrf	display
+		incf	display,1	; POINTER=digit4 and display=0001 syncs the poison prevention logic loop 
+		goto	CLEAR_FLAGS	; with the update loop
 ;
 CHECK_SECONDS
-		btfss	flags,SW1
+		btfss	flags,SW1	;skip this sub if not displaying secs
 		goto	CHECK_TIME
 		movlw	H'00'
 		movwf	digit2		; 3rd digit variable used to store temp hex value for hours display
@@ -305,6 +352,7 @@ SWITCH1
 		bsf	flags,CHG
 		bsf	flags,SW1
 		bsf	flags,SW_ON
+		clrf	poison
 ;
 SWITCH2	
 		btfss	var,2
@@ -312,13 +360,23 @@ SWITCH2
 		bsf	flags,CHG
 		bsf	flags,SW2
 		bsf	flags,SW_ON
+		clrf	poison
+;
 SWITCH3	
 		btfss	var,3
-		goto	BLANKING
+		goto	POISONCHECK
 		bsf	flags,CHG
 		bsf	flags,SW3
 		bsf	flags,SW_ON
+		clrf	poison
 ;
+POISONCHECK
+		btfss	poison,7	;if poison prev is not running then cycle as normal
+		goto	BLANKING
+		btfss	poison,6	;if  a second has not passed
+		goto	MAIN		;skip the rest of this
+		bcf 	poison,6	;reset once-a-second update flag
+
 BLANKING
 ; anode blanking busywait assuming 1 microsec per instruction 
 		movlw	BLANK
@@ -359,10 +417,8 @@ UPDATE
 		btfsc	display,4  ; skip if cycle complete not complete
 		bsf	display,1  ; if complete cycle, set display back to 1st (bit 0 set)
 		bcf	display,4  ; clear bit 4 anyway
+		goto	MAIN
 ;
-;
-;
-        goto    MAIN
 
         org     PIC54
         goto    START
