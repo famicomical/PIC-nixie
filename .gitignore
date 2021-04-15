@@ -1,0 +1,8 @@
+MPASM/clock54*
+!MPASM/clock54.asm
+MPASM/nixief54*
+!MPASM/nixief54.asm
+MPASM/*.INC
+MPASM/*.exe
+MPASM/*.INI
+MPASM/*.chm
