@@ -1,0 +1,12 @@
+(sym_lib_table
+  (lib (name ECSTCXO)(type Legacy)(uri ${KIPRJMOD}/2021-04-20_21-07-19.lib)(options "")(descr ""))
+  (lib (name hct125d)(type Legacy)(uri ${KIPRJMOD}/2021-04-21_01-53-18.lib)(options "")(descr ""))
+  (lib (name transistors)(type Legacy)(uri ${KIPRJMOD}/transistors.lib)(options "")(descr ""))
+  (lib (name resarray)(type Legacy)(uri ${KIPRJMOD}/2021-05-07_05-09-09.lib)(options "")(descr ""))
+  (lib (name eec)(type Legacy)(uri ${KIPRJMOD}/eec.lib)(options "")(descr ""))
+  (lib (name I537)(type Legacy)(uri ${KIPRJMOD}/I537.lib)(options "")(descr ""))
+  (lib (name torex_vreg)(type Legacy)(uri ${KIPRJMOD}/2021-10-20_17-26-55.lib)(options "")(descr ""))
+  (lib (name omnixie)(type Legacy)(uri ${KIPRJMOD}/omnixie.lib)(options "")(descr ""))
+  (lib (name TP5335)(type Legacy)(uri ${KIPRJMOD}/2021-10-22_19-28-50.lib)(options "")(descr ""))
+  (lib (name typec)(type Legacy)(uri ${KIPRJMOD}/2021-10-31_20-08-38.lib)(options "")(descr ""))
+)

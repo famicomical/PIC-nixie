@@ -1,0 +1,26 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP BSR92P
+D -0.14A Id, -250V Vds, P-Channel MOSFET, SOT-23
+K P-Channel MOSFET
+$ENDCMP
+#
+$CMP MPSA42
+D 300V Vce, NPN High Voltage Transistor
+K NPN High Voltage Transistor
+F http://www.onsemi.com/pub_link/Collateral/MPSA42-D.PDF
+$ENDCMP
+#
+$CMP PMBTA42
+D 300V Vce, NPN High Voltage Transistor
+K NPN High Voltage Transistor
+F http://www.onsemi.com/pub_link/Collateral/MPSA42-D.PDF
+$ENDCMP
+#
+$CMP PMBTA42,185
+D 300V Vce, NPN High Voltage Transistor
+K NPN High Voltage Transistor
+F https://assets.nexperia.com/documents/data-sheet/PMBTA42.pdf
+$ENDCMP
+#
+#End Doc Library

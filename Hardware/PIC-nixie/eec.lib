@@ -1,0 +1,111 @@
+EESchema-LIBRARY Version 2.4
+#encoding utf-8
+#
+# 74HC2G14GV,125
+#
+DEF 74HC2G14GV,125 U 0 40 Y Y 1 L N
+F0 "U" 0 200 50 H V L CNN
+F1 "74HC2G14GV,125" 0 300 50 H V L CNN
+F2 "Nexperia-SOT457-11_2018-0-*" 0 400 50 H I L CNN
+F3 "https://assets.nexperia.com/documents/data-sheet/74HC_HCT2G14.pdf" 0 500 50 H I L CNN
+F4 "+125°C" 0 600 50 H I L CNN "ambient temperature range high"
+F5 "-40°C" 0 700 50 H I L CNN "ambient temperature range low"
+F6 "No" 0 800 50 H I L CNN "automotive"
+F7 "IC" 0 900 50 H I L CNN "category"
+F8 "Integrated Circuits (ICs)" 0 1000 50 H I L CNN "device class L1"
+F9 "Logic ICs" 0 1100 50 H I L CNN "device class L2"
+F10 "Logic Gates" 0 1200 50 H I L CNN "device class L3"
+F11 "IC INVERTER SCHMITT 2CH 6TSOP" 0 1300 50 H I L CNN "digikey description"
+F12 "1727-6046-1-ND" 0 1400 50 H I L CNN "digikey part number"
+F13 "https://assets.nexperia.com/documents/package-information/SOT457.pdf" 0 1500 50 H I L CNN "footprint url"
+F14 "36MHz" 0 1600 50 H I L CNN "frequency"
+F15 "1.1mm" 0 1700 50 H I L CNN "height"
+F16 "Yes" 0 1800 50 H I L CNN "lead free"
+F17 "f6f5a9387f33849e" 0 1900 50 H I L CNN "library id"
+F18 "Inverting" 0 2000 50 H I L CNN "logic function desc"
+F19 "Nexperia" 0 2100 50 H I L CNN "manufacturer"
+F20 "6V" 0 2200 50 H I L CNN "max supply voltage"
+F21 "2V" 0 2300 50 H I L CNN "min supply voltage"
+F22 "771-HC2G14GV125" 0 2400 50 H I L CNN "mouser part number"
+F23 "1uA" 0 2500 50 H I L CNN "nominal supply current"
+F24 "2" 0 2600 50 H I L CNN "number of circuits"
+F25 "1" 0 2700 50 H I L CNN "number of inputs"
+F26 "1" 0 2800 50 H I L CNN "number of outputs"
+F27 "TSOP6" 0 2900 50 H I L CNN "package"
+F28 "13ns" 0 3000 50 H I L CNN "propagation delay"
+F29 "Yes" 0 3100 50 H I L CNN "rohs"
+F30 "0.013mm" 0 3200 50 H I L CNN "standoff height"
+F31 "+125°C" 0 3300 50 H I L CNN "temperature range high"
+F32 "-40°C" 0 3400 50 H I L CNN "temperature range low"
+DRAW
+C 730 -500 20 1 1 0 N
+C 730 -200 20 1 1 0 N
+S 200 100 1000 -800 1 1 0 f
+P 2 1 1 0 200 -500 500 -500 N
+P 2 1 1 0 200 -200 500 -200 N
+P 2 1 1 0 500 -600 700 -500 N
+P 2 1 1 0 500 -500 500 -400 N
+P 2 1 1 0 500 -400 500 -600 N
+P 2 1 1 0 500 -300 700 -200 N
+P 2 1 1 0 500 -200 500 -100 N
+P 2 1 1 0 500 -100 500 -300 N
+P 2 1 1 0 700 -500 500 -400 N
+P 2 1 1 0 700 -200 500 -100 N
+P 2 1 1 0 750 -500 1020 -500 N
+P 2 1 1 0 750 -200 1020 -200 N
+X 1A 1 100 -200 100 R 40 0 1 1 I
+X GND 2 1100 -700 100 L 40 40 1 1 W
+X 2A 3 100 -500 100 R 40 0 1 1 I
+X 2Y 4 1100 -500 100 L 40 0 1 1 O
+X VCC 5 100 0 100 R 40 40 1 1 W
+X 1Y 6 1100 -200 100 L 40 0 1 1 O
+ENDDRAW
+ENDDEF
+#
+# 74LVC1G04
+#
+DEF 74LVC1G04 U 0 40 Y Y 1 F N
+F0 "U" -100 150 50 H V C CNN
+F1 "74LVC1G04" 0 -150 50 H V C CNN
+F2 "" 0 0 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+ALIAS 74LVC1GU04 74AHC1G04 74AHCT1G04 74AUC1G04 74AUP1G04 74AHC1GU04 74AHCT1GU04 74AUC1GU04 74AUP1GU04
+$FPLIST
+ SOT*
+ SG-*
+$ENDFPLIST
+DRAW
+P 4 0 1 10 -150 100 -150 -100 100 0 -150 100 N
+X ~ 2 -300 0 150 R 40 40 1 1 I
+X GND 3 0 -100 0 D 40 40 1 1 W N
+X ~ 4 250 0 150 L 40 40 1 1 O I
+X +V 5 0 100 0 U 40 40 1 1 W N
+ENDDRAW
+ENDDEF
+#
+# 74LVC2G80
+#
+DEF 74LVC2G80 U 0 40 Y Y 2 F N
+F0 "U" -100 200 50 H V C CNN
+F1 "74LVC2G80" 0 -200 50 H V C CNN
+F2 "" 0 0 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+ALIAS 74AUC2G80
+$FPLIST
+ SSOP*
+ VSSOP*
+$ENDFPLIST
+DRAW
+S -150 150 150 -150 0 1 10 N
+X GND 4 0 -150 0 D 40 40 0 1 W N
+X +V 8 0 150 0 U 40 40 0 1 W N
+X C 1 -250 -100 100 R 40 40 1 1 I C
+X D 2 -250 100 100 R 40 40 1 1 I
+X ~Q 7 250 100 100 L 40 40 1 1 O
+X ~Q 3 250 100 100 L 40 40 2 1 O
+X C 5 -250 -100 100 R 40 40 2 1 I C
+X D 6 -250 100 100 R 40 40 2 1 I
+ENDDRAW
+ENDDEF
+#
+#End Library

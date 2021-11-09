@@ -1,6 +1,6 @@
 ;
 ;********************************************************************
-	LIST    P = 16C54, n = 66
+	LIST    P = 16F54, n = 66
 ;
 ;                      Clock
 ;*********************************************************************
@@ -130,6 +130,7 @@ count2	equ	H'16'	; 2nd loop counter for nested loops
 ;
 ;  Initialize Ports all outputs, blank display
 ;
+	__config	B'1010'
 START   movlw	H'03'   ; set option register, transition on clock,
         option		; Prescale RTCC, 1:16 
 ;
@@ -366,13 +367,13 @@ SETPORT	movlw	H'00'
 	btfss	display,3  ; if 4th display, get 4th digit
 	movf	digit1,0
 	movwf	PORT_B	   ; put the number out to display
-	btfsc	sec_nth,7
-	bsf	PORT_B,0   ; sets colon decimal on %50 duty using highest bit
+	btfsc	seconds,0
+	bsf	PORT_B,0   ; sets colon decimal at 2Hz
 	movf	display,0  ; get display needing cycle on
 	movwf	PORT_A	   ; enables proper display
 	movwf	display    ; returns old w if not done, new w if resetting display
 	rlf	display,1  ; rotate display "on" bit to next position
-	bsf	display,0  ; assures a 1 on lowest position since rotated carry is zero
+	bsf	display,0  ; assures a 1 on lowest position since rotated carry is *SOMETIMES* zero
 	btfss	display,4  ; check if last display was already updated
 	bcf	display,0  ; if it was, set display back to 1st (bit 0 set)
 ;

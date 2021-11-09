@@ -1,0 +1,5 @@
+(fp_lib_table
+  (lib (name PIC-nixie)(type KiCad)(uri ${KIPRJMOD}/PIC-nixie.pretty)(options "")(descr ""))
+  (lib (name external)(type KiCad)(uri ${KIPRJMOD}/footprints.pretty)(options "")(descr ""))
+  (lib (name ext2)(type KiCad)(uri ${KIPRJMOD}/eec.pretty)(options "")(descr ""))
+)

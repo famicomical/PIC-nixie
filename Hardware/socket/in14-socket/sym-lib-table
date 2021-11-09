@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name nixies-us)(type Legacy)(uri C:/Users/famic/Documents/PIC-nixie/Hardware/socket/nixielibs/nixies-us.lib)(options "")(descr ""))
+  (lib (name VLMU3100-GS08)(type Legacy)(uri C:/Users/famic/Documents/PIC-nixie/Hardware/socket/nixielibs/VLMU3100-GS08/VLMU3100-GS08.lib)(options "")(descr ""))
+)

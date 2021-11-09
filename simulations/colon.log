@@ -1,0 +1,21 @@
+Circuit: * C:\Users\famic\Documents\PIC-nixie\simulations\colon.asc
+
+Direct Newton iteration for .op point succeeded.
+
+Date: Fri Oct 29 19:02:56 2021
+Total elapsed time: 0.237 seconds.
+
+tnom = 27
+temp = 27
+method = modified trap
+totiter = 7803
+traniter = 7783
+tranpoints = 2755
+accept = 2315
+rejected = 440
+matrix size = 16
+fillins = 8
+solver = Normal
+Matrix Compiler1: 1.41 KB object code size  0.3/0.2/[0.1]
+Matrix Compiler2: off  [0.2]/0.2/0.2
+

@@ -126,7 +126,7 @@ ppcount	equ		H'18'		; loop variable for poison prevention routine
 ;  Initialize Ports all outputs, blank display
 ;
 
-	__config	1	; set oscillator mode to XT, Watchdog Timer is off
+	__config	B'1010'	; set oscillator mode to XT, Watchdog Timer is off
 START   
 		movlw	H'03'   	; set option register, transition on CLKOUT,
 		option			; Prescale TMR0, 1:16 (contents of the W register
@@ -146,7 +146,7 @@ START
 		movwf	TMR0		; set TMR0 above zero so initial wait period occurs
 		movlw	H'01'		; inverted from 'FE' cause we Common anode now
 		movwf	display		; initializes 'display' selected to first display.
-		movlw	BLANK		; put all displays to blank, no visible segments
+		movlw	BLANK		; put all displays to blank
 		movwf	digit1
 		movwf	digit2
 		movwf	digit3
@@ -236,8 +236,9 @@ SET_TIME
 		subwf	sec_nth,1 	; subtraction adjustment for each 1/2 day rollover
 ;
 TIME_DONE
-		btfss	flags,CHG	; if any change in stored clock time, 
-	 	goto	CYCLE		;  then postpone cycling digits until display vars are set in next few subs
+		btfss	flags,CHG	; if no change in stored clock time, 
+	 	goto	CYCLE		;  cycle digits without updating digit vars
+	 				; display vars are set in next few subs
 ;
 CHECK_POISON
 		movlw	D'20'		;20 min(/4) of on-time. 1/4 factor due to muxing
@@ -257,7 +258,7 @@ CHECK_POISON
 
 		movlw	display		; check cycle for wraparound 
 		xorwf	FSR,0		; set status bits for FSR='digit4'-4='display'
-		movlw	D'4'		; prepare w to bump FSR back
+		movlw	D'4'		; prepare w to bump FSR back; assuming this does not set any flags...
 		btfsc	STATUS,Z	; if FSR!='display' skip bumping
 		addwf	FSR,1		;
 
@@ -378,10 +379,10 @@ POISONCHECK
 		bcf 	poison,6	;reset once-a-second update flag
 
 BLANKING
-; anode blanking busywait assuming 1 microsec per instruction 
+; anode blanking busywait assuming 1 microsec per instruction, 2 instructions per loop
 		movlw	BLANK
 		movwf	PORT_A
-		movlw 	D'150'
+		movlw 	D'75'		;75*2 = 150us
 		movwf	count
 BLOOP
 		decfsz 	count,1
@@ -399,23 +400,27 @@ UPDATE
 		movf	digit1,0
 ;rotate digit left four times before display
 		movwf	var
-		rlf	var, 1
-		rlf	var, 1
-		rlf	var, 1
-		rlf	var, 0
-		movwf	PORT_B	   ; put the number out to display
+;		rlf	var, 1
+;		rlf	var, 1
+;		rlf	var, 1
+;		rlf	var, 1
+		swapf	var,1
+		btfsc	seconds,0  ; sets colon decimal at 0.5Hz using lowest bit
+		bsf	var,0   ; 
+		movf	var
+
+		movwf	PORT_B	   ; put the number and colon out to display
 
 
-		btfsc	sec_nth,7  ; sets colon decimal on %50 duty using highest bit
-		bsf	PORT_B,0   ; nice because we don't yet know if colon logic is p or n
 
 
 		movf	display,0  ; get anode needing cycle on
 		movwf	PORT_A	   ; enables anode display
-
+		
+		bcf	STATUS, 0
 		rlf	display,1  ; rotate display "on" bit to next position
 		btfsc	display,4  ; skip if cycle complete not complete
-		bsf	display,1  ; if complete cycle, set display back to 1st (bit 0 set)
+		bsf	display,0  ; if complete cycle, set display back to 1st (bit 0 set)
 		bcf	display,4  ; clear bit 4 anyway
 		goto	MAIN
 ;

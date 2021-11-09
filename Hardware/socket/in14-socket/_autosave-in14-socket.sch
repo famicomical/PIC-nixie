@@ -1,0 +1,137 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L nixies-us:IN-14 N1
+U 1 1 61298699
+P 5450 3350
+F 0 "N1" H 5500 4095 45  0000 C CNN
+F 1 "IN-14" H 5450 3350 45  0001 L BNN
+F 2 "nixies-us_IN-14" H 5480 3500 20  0001 C CNN
+F 3 "" H 5450 3350 50  0001 C CNN
+	1    5450 3350
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_01x14_Male J?
+U 1 1 612D6159
+P 4550 3550
+F 0 "J?" H 4658 4331 50  0000 C CNN
+F 1 "Conn_01x14_Male" H 4658 4240 50  0000 C CNN
+F 2 "" H 4550 3550 50  0001 C CNN
+F 3 "~" H 4550 3550 50  0001 C CNN
+	1    4550 3550
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4750 2950 5150 2950
+Wire Wire Line
+	5150 3050 4750 3050
+Wire Wire Line
+	4750 3150 5150 3150
+Wire Wire Line
+	5150 3250 4750 3250
+Wire Wire Line
+	5150 3350 4750 3350
+Wire Wire Line
+	5150 3450 4750 3450
+Wire Wire Line
+	5150 3550 4750 3550
+Wire Wire Line
+	5150 3650 4750 3650
+Wire Wire Line
+	5150 3750 4750 3750
+Wire Wire Line
+	5150 3850 4750 3850
+Wire Wire Line
+	4750 3950 6050 3950
+Wire Wire Line
+	6050 3950 6050 3450
+Wire Wire Line
+	6050 3450 5850 3450
+Wire Wire Line
+	4750 4050 6750 4050
+Wire Wire Line
+	6750 4050 6750 4100
+Wire Wire Line
+	6750 4150 4750 4150
+$Comp
+L VLMU3100-GS08:VLMU3100-GS08 CR1
+U 1 1 612DAAD3
+P 7000 3700
+F 0 "CR1" V 7147 3804 60  0000 L CNN
+F 1 "VLMU3100-GS08" V 7253 3804 60  0000 L CNN
+F 2 "CR_100-GS08_VIS" H 7200 3340 60  0001 C CNN
+F 3 "" H 7000 3700 60  0000 C CNN
+	1    7000 3700
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	7000 4100 6750 4100
+Connection ~ 6750 4100
+Wire Wire Line
+	6750 4100 6750 4150
+Wire Wire Line
+	4750 4250 8100 4250
+Wire Wire Line
+	8100 4250 8100 3600
+$Comp
+L Device:R R1
+U 1 1 612DD7B5
+P 7600 3600
+F 0 "R1" V 7393 3600 50  0000 C CNN
+F 1 "R" V 7484 3600 50  0000 C CNN
+F 2 "" V 7530 3600 50  0001 C CNN
+F 3 "~" H 7600 3600 50  0001 C CNN
+	1    7600 3600
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	8100 3600 7750 3600
+Wire Wire Line
+	7450 3600 7000 3600
+Wire Wire Line
+	7000 3600 7000 3700
+$Comp
+L power:GND #PWR?
+U 1 1 612DE6E6
+P 6600 3750
+F 0 "#PWR?" H 6600 3500 50  0001 C CNN
+F 1 "GND" H 6605 3577 50  0000 C CNN
+F 2 "" H 6600 3750 50  0001 C CNN
+F 3 "" H 6600 3750 50  0001 C CNN
+	1    6600 3750
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6600 3750 6750 3750
+Wire Wire Line
+	6750 3750 6750 4050
+Connection ~ 6750 4050
+Wire Wire Line
+	6750 4050 6750 4100
+$Comp
+L power:VCC #PWR?
+U 1 1 612DF541
+P 8100 3600
+F 0 "#PWR?" H 8100 3450 50  0001 C CNN
+F 1 "VCC" H 8115 3773 50  0000 C CNN
+F 2 "" H 8100 3600 50  0001 C CNN
+F 3 "" H 8100 3600 50  0001 C CNN
+	1    8100 3600
+	1    0    0    -1  
+$EndComp
+Connection ~ 8100 3600
+$EndSCHEMATC

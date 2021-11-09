@@ -1,0 +1,9 @@
+worst case power output of NCH8200HV:
+170V*0.005A = 0.85 Watts. 
+Assume 80% efficiency -> input current of 210mA at 5V
+
+TCXO: 2mA
+
+PIC: 1-10mA
+
+K155ID1: 25mA max
