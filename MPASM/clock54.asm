@@ -131,7 +131,8 @@ count2	equ	H'16'	; 2nd loop counter for nested loops
 ;  Initialize Ports all outputs, blank display
 ;
 	__config	B'1010'
-START   movlw	H'03'   ; set option register, transition on clock,
+START   
+	movlw	H'03'   ; set option register, transition on clock,
         option		; Prescale RTCC, 1:16 
 ;
 	movlw	0
@@ -196,7 +197,8 @@ CHECK_SW
 	movlw	MAXMINS
 	movwf	minutes
 ;
-HOURSET	btfsc	flags,SW2
+HOURSET	
+	btfsc	flags,SW2
 	goto	CHECK_TIME ; not changing hours
 	incfsz	hours,1
 	goto	CHECK_TIME
