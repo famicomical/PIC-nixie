@@ -1,0 +1,10 @@
+(sym_lib_table
+  (lib (name eec)(type Legacy)(uri C:/Users/famic/Documents/PIC-nixie/Hardware/PIC-nixie/eec.lib)(options "")(descr ""))
+  (lib (name hct125d)(type Legacy)(uri C:/Users/famic/Documents/PIC-nixie/Hardware/PIC-nixie/2021-04-21_01-53-18.lib)(options "")(descr ""))
+  (lib (name transistors)(type Legacy)(uri C:/Users/famic/Documents/PIC-nixie/Hardware/PIC-nixie/transistors.lib)(options "")(descr ""))
+  (lib (name resarray)(type Legacy)(uri C:/Users/famic/Documents/PIC-nixie/Hardware/PIC-nixie/2021-05-07_05-09-09.lib)(options "")(descr ""))
+  (lib (name I537)(type Legacy)(uri C:/Users/famic/Documents/PIC-nixie/Hardware/PIC-nixie/I537.lib)(options "")(descr ""))
+  (lib (name omnixie)(type Legacy)(uri C:/Users/famic/Documents/PIC-nixie/Hardware/PIC-nixie/omnixie.lib)(options "")(descr ""))
+  (lib (name typec)(type Legacy)(uri C:/Users/famic/Documents/PIC-nixie/Hardware/PIC-nixie/2021-10-31_20-08-38.lib)(options "")(descr ""))
+  (lib (name torex_vreg)(type Legacy)(uri C:/Users/famic/Documents/PIC-nixie/Hardware/PIC-nixie/2021-10-20_17-26-55.lib)(options "")(descr ""))
+)

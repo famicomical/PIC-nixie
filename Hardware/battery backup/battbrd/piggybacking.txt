@@ -1,0 +1,4 @@
+cut trace between U3 pin 14 and PIC16F pin 14
+solder U3 pin 14 to VCC
+cut trace between C8 and the via on the rear side.
+solder bat wire to regulator U6 pin 1 or 3.

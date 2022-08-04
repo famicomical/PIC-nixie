@@ -6,3 +6,7 @@ MPASM/*.INC
 MPASM/*.exe
 MPASM/*.INI
 MPASM/*.chm
+MPASM/*.COD
+MPASM/*.ERR
+MPASM/*.LST
+Hardware/socket/nixielibs/*
