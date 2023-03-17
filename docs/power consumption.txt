@@ -11,7 +11,8 @@ might need 22uf capacitor across pic rails to prevent reset on battery enable
 on batt:
 74lvc1g04: 16pf*16MHz * 3.3V = 0.845mA  
 74lvc2g80: 22pF*16MHz*3.3V*(1+.5+.25) = 2.03mA
-16F54: RA outputs consume 510uA, RB outputs consume 3.3V/10*5 mA , processor consumes ~250uA = 2.41mA
+16F54: RA outputs consume 510uA, RB outputs consume 3.3V/10000*5 mA , processor consumes ~250uA = 2.41mA
 TCXO: 1.5mA
 
 80mAh/(1.5+2.41+2.03+.845)mA= 11.7hours worst case.
+80mAh/(1.5+1.09+2.03+.845)ma= ~14 hours if RA2 is removed.

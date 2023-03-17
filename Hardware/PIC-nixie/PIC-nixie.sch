@@ -14,17 +14,6 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L MCU_Microchip_PIC16:PIC16F54-IP U1
-U 1 1 607CE7CC
-P 5500 5800
-F 0 "U1" H 5500 6881 50  0000 C CNN
-F 1 "PIC16F54-IP" H 5500 6790 50  0000 C CNN
-F 2 "Package_DIP:DIP-18_W7.62mm_Socket" H 5500 5800 50  0001 C CIN
-F 3 "http://ww1.microchip.com/downloads/en/DeviceDoc/41213D.pdf" H 5500 5800 50  0001 C CNN
-	1    5500 5800
-	1    0    0    -1  
-$EndComp
-$Comp
 L eec:74LVC2G80 U5
 U 1 1 607F67CC
 P 3150 5750
@@ -164,11 +153,6 @@ Wire Wire Line
 	5500 6300 4400 6300
 Wire Wire Line
 	4400 6300 4400 6400
-Wire Wire Line
-	5500 4850 5500 4900
-Connection ~ 5500 4900
-Wire Wire Line
-	5500 4900 5500 6300
 $Comp
 L Switch:SW_SPST SW2
 U 1 1 6081502C
@@ -183,12 +167,12 @@ $EndComp
 $Comp
 L Switch:SW_SPST SW3
 U 1 1 60815501
-P 7600 5600
-F 0 "SW3" V 7554 5698 50  0000 L CNN
-F 1 "SW_SPST" V 7645 5698 50  0000 L CNN
-F 2 "external:SW_TL3301SPF260QG" H 7600 5600 50  0001 C CNN
-F 3 "~" H 7600 5600 50  0001 C CNN
-	1    7600 5600
+P 7650 5600
+F 0 "SW3" V 7604 5698 50  0000 L CNN
+F 1 "SW_SPST" V 7695 5698 50  0000 L CNN
+F 2 "external:SW_TL3301SPF260QG" H 7650 5600 50  0001 C CNN
+F 3 "~" H 7650 5600 50  0001 C CNN
+	1    7650 5600
 	0    1    1    0   
 $EndComp
 Wire Wire Line
@@ -196,23 +180,16 @@ Wire Wire Line
 $Comp
 L power:VCC #PWR0110
 U 1 1 608176E7
-P 6900 4150
-F 0 "#PWR0110" H 6900 4000 50  0001 C CNN
-F 1 "VCC" H 6915 4323 50  0000 C CNN
-F 2 "" H 6900 4150 50  0001 C CNN
-F 3 "" H 6900 4150 50  0001 C CNN
-	1    6900 4150
+P 7450 4800
+F 0 "#PWR0110" H 7450 4650 50  0001 C CNN
+F 1 "VCC" H 7465 4973 50  0000 C CNN
+F 2 "" H 7450 4800 50  0001 C CNN
+F 3 "" H 7450 4800 50  0001 C CNN
+	1    7450 4800
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	7250 4950 7250 5400
-Wire Wire Line
-	6900 4150 6900 4200
-Connection ~ 6900 4200
-Wire Wire Line
-	7600 5800 7600 6000
-Wire Wire Line
-	7600 4200 7400 4200
+	7650 5800 7650 6000
 $Comp
 L hct125d:74HCT125D U3
 U 1 1 607FA102
@@ -225,17 +202,11 @@ F 3 "" H 8950 6100 60  0000 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	6300 6400 8200 6400
-Wire Wire Line
-	8450 6400 8450 6700
-Wire Wire Line
 	8550 6300 8550 6500
 Wire Wire Line
 	8550 6500 8950 6500
 Wire Wire Line
 	8950 6300 8650 6300
-Wire Wire Line
-	8650 6300 8650 6200
 Wire Wire Line
 	8950 6800 9500 6800
 Wire Wire Line
@@ -554,113 +525,8 @@ Wire Wire Line
 Connection ~ 14750 3750
 Wire Wire Line
 	14750 3950 14750 3750
-$Comp
-L resarray:EXB-V8V105JV RA2
-U 1 1 60AD8039
-P 7600 7450
-F 0 "RA2" V 7903 6771 60  0000 R CNN
-F 1 "EXB-V8V103JV" V 7500 7450 60  0000 R CNN
-F 2 "Resistor_SMD:R_Array_Convex_4x0603" H 7850 7115 60  0001 C CNN
-F 3 "" H 7600 7450 60  0000 C CNN
-	1    7600 7450
-	0    -1   -1   0   
-$EndComp
 Wire Wire Line
 	8450 6700 8950 6700
-Wire Wire Line
-	6300 6300 8000 6300
-Wire Wire Line
-	6300 6200 7800 6200
-Wire Wire Line
-	6300 6100 7600 6100
-Wire Wire Line
-	7600 6950 7600 6100
-Connection ~ 7600 6100
-Wire Wire Line
-	7600 6100 8950 6100
-Wire Wire Line
-	7800 6950 7800 6200
-Connection ~ 7800 6200
-Wire Wire Line
-	7800 6200 8650 6200
-Wire Wire Line
-	8000 6950 8000 6300
-Connection ~ 8000 6300
-Wire Wire Line
-	8000 6300 8550 6300
-Wire Wire Line
-	8200 6950 8200 6400
-Connection ~ 8200 6400
-Wire Wire Line
-	8200 6400 8450 6400
-Wire Wire Line
-	8200 7450 8000 7450
-Wire Wire Line
-	7800 7450 8000 7450
-Connection ~ 8000 7450
-Wire Wire Line
-	7800 7450 7600 7450
-Connection ~ 7800 7450
-$Comp
-L resarray:EXB-V8V105JV RA1
-U 1 1 60B1D18D
-P 6500 7450
-F 0 "RA1" V 6803 6771 60  0000 R CNN
-F 1 "EXB-V8V103JV" V 6400 7450 60  0000 R CNN
-F 2 "Resistor_SMD:R_Array_Convex_4x0603" H 6750 7115 60  0001 C CNN
-F 3 "" H 6500 7450 60  0000 C CNN
-	1    6500 7450
-	0    -1   -1   0   
-$EndComp
-Wire Wire Line
-	6300 5900 6900 5900
-Wire Wire Line
-	6300 6000 7100 6000
-Wire Wire Line
-	7100 6950 7100 6000
-Connection ~ 7100 6000
-Wire Wire Line
-	7100 6000 7600 6000
-Wire Wire Line
-	6900 6950 6900 5900
-Connection ~ 6900 5900
-Wire Wire Line
-	6900 5900 7250 5900
-Wire Wire Line
-	6300 5800 6700 5800
-Wire Wire Line
-	6700 6950 6700 5800
-Connection ~ 6700 5800
-Wire Wire Line
-	6700 5800 6900 5800
-$Comp
-L power:GNDD #PWR0123
-U 1 1 60BB1523
-P 7350 7550
-F 0 "#PWR0123" H 7350 7300 50  0001 C CNN
-F 1 "GNDD" H 7354 7395 50  0000 C CNN
-F 2 "" H 7350 7550 50  0001 C CNN
-F 3 "" H 7350 7550 50  0001 C CNN
-	1    7350 7550
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	7100 7450 6900 7450
-Wire Wire Line
-	6900 7450 6700 7450
-Connection ~ 6900 7450
-Wire Wire Line
-	6700 7450 6500 7450
-Connection ~ 6700 7450
-Wire Wire Line
-	7600 7450 7350 7450
-Connection ~ 7600 7450
-Connection ~ 7100 7450
-Wire Wire Line
-	7350 7550 7350 7450
-Connection ~ 7350 7450
-Wire Wire Line
-	7350 7450 7100 7450
 Connection ~ 12600 7300
 Text Label 12650 7500 0    50   ~ 0
 midpull
@@ -698,8 +564,6 @@ Wire Wire Line
 Connection ~ 13550 7300
 Wire Wire Line
 	13550 7300 13750 7300
-Wire Wire Line
-	6500 6950 6500 5700
 Wire Wire Line
 	6300 5700 6500 5700
 Text Label 6500 5700 0    50   ~ 0
@@ -1534,38 +1398,6 @@ F 3 "~" H 12000 7000 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L resarray:EXB-V8V105JV RA3
-U 1 1 61A850D9
-P 7200 4850
-F 0 "RA3" V 7503 4171 60  0000 R CNN
-F 1 "EXB-V8V821JV" V 7100 4850 60  0000 R CNN
-F 2 "Resistor_SMD:R_Array_Convex_4x0603" H 7450 4515 60  0001 C CNN
-F 3 "" H 7200 4850 60  0000 C CNN
-	1    7200 4850
-	0    -1   -1   0   
-$EndComp
-Wire Wire Line
-	7250 4950 7400 4950
-Wire Wire Line
-	7400 4950 7400 4850
-Wire Wire Line
-	7600 4850 7600 5400
-Wire Wire Line
-	6900 4850 7200 4850
-Wire Wire Line
-	7400 4350 7400 4200
-Connection ~ 7400 4200
-Wire Wire Line
-	7600 4200 7600 4350
-Wire Wire Line
-	6900 4350 7200 4350
-Wire Wire Line
-	6900 4200 6900 4350
-Wire Wire Line
-	6900 4200 7400 4200
-NoConn ~ 7800 4350
-NoConn ~ 7800 4850
-$Comp
 L Connector:Conn_01x20_Female J2
 U 1 1 617CAFFA
 P 14550 5900
@@ -2115,5 +1947,150 @@ Connection ~ 6000 4500
 Wire Wire Line
 	6000 4500 6000 4550
 NoConn ~ 4850 4200
-NoConn ~ 6900 4850
+$Comp
+L resarray:EXB-V8V105JV RA2
+U 1 1 60AD8039
+P 7600 7300
+F 0 "RA2" V 7903 6621 60  0000 R CNN
+F 1 "EXB-V8V104JV" V 7500 7300 60  0000 R CNN
+F 2 "Resistor_SMD:R_Array_Convex_4x0603" H 7850 6965 60  0001 C CNN
+F 3 "" H 7600 7300 60  0000 C CNN
+	1    7600 7300
+	0    -1   -1   0   
+$EndComp
+Connection ~ 7600 7300
+Wire Wire Line
+	7800 7300 7600 7300
+Wire Wire Line
+	7600 7300 7350 7300
+Connection ~ 7800 7300
+Wire Wire Line
+	7800 7300 8000 7300
+Connection ~ 8000 7300
+Wire Wire Line
+	8200 7300 8000 7300
+Wire Wire Line
+	5500 4850 5500 4900
+Connection ~ 5500 4900
+$Comp
+L MCU_Microchip_PIC16:PIC16F54-IP U1
+U 1 1 607CE7CC
+P 5500 5800
+F 0 "U1" H 5500 6881 50  0000 C CNN
+F 1 "PIC16F54-IP" H 5500 6790 50  0000 C CNN
+F 2 "Package_DIP:DIP-18_W7.62mm_Socket" H 5500 5800 50  0001 C CIN
+F 3 "http://ww1.microchip.com/downloads/en/DeviceDoc/41213D.pdf" H 5500 5800 50  0001 C CNN
+	1    5500 5800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5500 4900 5500 6300
+$Comp
+L power:GNDD #PWR0145
+U 1 1 632E4D0D
+P 7350 7300
+F 0 "#PWR0145" H 7350 7050 50  0001 C CNN
+F 1 "GNDD" H 7354 7145 50  0000 C CNN
+F 2 "" H 7350 7300 50  0001 C CNN
+F 3 "" H 7350 7300 50  0001 C CNN
+	1    7350 7300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6300 5900 6900 5900
+Wire Wire Line
+	8650 6200 8650 6300
+Wire Wire Line
+	8450 6400 8450 6700
+Wire Wire Line
+	7450 4800 7450 5000
+Wire Wire Line
+	7450 5000 7400 5000
+Wire Wire Line
+	7450 5000 7500 5000
+Connection ~ 7450 5000
+Wire Wire Line
+	7400 5400 7250 5400
+Wire Wire Line
+	6300 6000 7100 6000
+Wire Wire Line
+	7500 5400 7650 5400
+$Comp
+L Device:R_Pack02 RA3
+U 1 1 632E05AC
+P 7500 5200
+F 0 "RA3" H 7100 5250 50  0000 L CNN
+F 1 "EXB-V4V822JV" H 7650 5200 50  0000 L CNN
+F 2 "Resistor_SMD:R_Array_Convex_2x0603" V 7675 5200 50  0001 C CNN
+F 3 "~" H 7500 5200 50  0001 C CNN
+	1    7500 5200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7350 7300 7100 7300
+Connection ~ 7100 7300
+Wire Wire Line
+	7100 7300 6900 7300
+Connection ~ 6900 7300
+Wire Wire Line
+	6700 7300 6500 7300
+Wire Wire Line
+	6900 7300 6700 7300
+Connection ~ 6700 7300
+$Comp
+L resarray:EXB-V8V105JV RA1
+U 1 1 60B1D18D
+P 6500 7300
+F 0 "RA1" V 6803 6621 60  0000 R CNN
+F 1 "EXB-V8V104JV" V 6400 7300 60  0000 R CNN
+F 2 "Resistor_SMD:R_Array_Convex_4x0603" H 6750 6965 60  0001 C CNN
+F 3 "" H 6500 7300 60  0000 C CNN
+	1    6500 7300
+	0    -1   -1   0   
+$EndComp
+Connection ~ 7350 7300
+Wire Wire Line
+	6300 6200 7800 6200
+Wire Wire Line
+	6300 6300 8000 6300
+Wire Wire Line
+	6300 6400 8200 6400
+Wire Wire Line
+	6700 6800 6700 5800
+Wire Wire Line
+	6300 5800 6700 5800
+Wire Wire Line
+	6500 6800 6500 5700
+Connection ~ 6900 5900
+Wire Wire Line
+	6900 5900 7250 5900
+Wire Wire Line
+	6900 5900 6900 6800
+Wire Wire Line
+	7100 6800 7100 6000
+Connection ~ 7100 6000
+Wire Wire Line
+	7100 6000 7650 6000
+Wire Wire Line
+	7600 6800 7600 6100
+Wire Wire Line
+	6300 6100 7600 6100
+Connection ~ 7600 6100
+Wire Wire Line
+	7600 6100 8950 6100
+Wire Wire Line
+	7800 6800 7800 6200
+Connection ~ 7800 6200
+Wire Wire Line
+	7800 6200 8650 6200
+Wire Wire Line
+	8000 6800 8000 6300
+Connection ~ 8000 6300
+Wire Wire Line
+	8000 6300 8550 6300
+Wire Wire Line
+	8200 6800 8200 6400
+Connection ~ 8200 6400
+Wire Wire Line
+	8200 6400 8450 6400
 $EndSCHEMATC
