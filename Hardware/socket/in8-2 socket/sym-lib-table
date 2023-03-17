@@ -1,8 +1,7 @@
 (sym_lib_table
-  (lib (name nixies-us)(type Legacy)(uri C:/Users/famic/Documents/PIC-nixie/Hardware/socket/nixielibs/nixies-us.lib)(options "")(descr ""))
-  (lib (name VLMU3100-GS08)(type Legacy)(uri C:/Users/famic/Documents/PIC-nixie/Hardware/socket/nixielibs/VLMU3100-GS08/VLMU3100-GS08.lib)(options "")(descr ""))
-  (lib (name mynixies)(type Legacy)(uri C:/Users/famic/Documents/PIC-nixie/Hardware/socket/nixielibs/mynixies.lib)(options "")(descr ""))
-  (lib (name in14)(type Legacy)(uri ${KIPRJMOD}/in14.lib)(options "")(descr ""))
+  (lib (name nixies-us)(type Legacy)(uri ${KIPRJMOD}/nixielibs/nixies-us.lib)(options "")(descr ""))
+  (lib (name VLMU3100-GS08)(type Legacy)(uri ${KIPRJMOD}/VLMU3100-GS08/VLMU3100-GS08.lib)(options "")(descr ""))
+  (lib (name mynixies)(type Legacy)(uri ${KIPRJMOD}/nixielibs/mynixies.lib)(options "")(descr ""))
   (lib (name ne2-a1a)(type Legacy)(uri ${KIPRJMOD}/ne2-a1a.lib)(options "")(descr ""))
   (lib (name in8-2)(type Legacy)(uri ${KIPRJMOD}/in8-2.lib)(options "")(descr ""))
 )

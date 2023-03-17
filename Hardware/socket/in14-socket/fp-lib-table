@@ -1,5 +1,5 @@
 (fp_lib_table
   (lib (name footprints)(type KiCad)(uri ${KIPRJMOD}/footprints.pretty)(options "")(descr ""))
-  (lib (name mynixies)(type Legacy)(uri C:/Users/famic/Documents/PIC-nixie/Hardware/socket/nixielibs/mynixies.mod)(options "")(descr ""))
-  (lib (name nixies-us)(type Legacy)(uri C:/Users/famic/Documents/PIC-nixie/Hardware/socket/nixielibs/nixies-us.mod)(options "")(descr ""))
+  (lib (name mynixies)(type Legacy)(uri ${KIPRJMOD}/nixielibs/mynixies.mod)(options "")(descr ""))
+  (lib (name nixies-us)(type Legacy)(uri ${KIPRJMOD}/nixielibs/nixies-us.mod)(options "")(descr ""))
 )
