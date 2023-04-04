@@ -13,3 +13,8 @@ The program correctly tracks time such that the bottle-neck for clock accuracy w
 
 A CR2032 battery can be installed on the circuit board to provide backup power in the event of an outage. The tubes may go dark but the MCU will continue to run and keep time for about 11 hours until power is restored.
 
+## Design
+
+The enclosure for the prototype was made from stacked slabs of Fraké wood. The socket board plugs into the logic board to make an 'L' shape. The PCB assembly is housed in the 'C'-shaped enclosure, which obscures the tops of the neon tubes. The idea is that, by hiding the pointed tops of the IN-14 tubes, the finished clock achieves a symettry that would normally only be possible if it were made with IN-12 bulbs. The vertical digits now appear to be floating seamlessly within a cylinder. PIC-Nixie is the first neon tube clock to incorporate this design principle.
+
+![Serial #0](exemplar.jpg)
