@@ -21,4 +21,4 @@ The PCB assembly is housed in a 'C'-shaped enclosure, which obscures the tops of
 
 ![Serial #0](exemplar.jpg)
 
-The enclosure for the #0 prototype was made from stacked slabs of Fraké wood. It was a gift for my grandpa.
+The enclosure for the #0 prototype was made from stacked slabs of Fraké wood. The clock was a gift for my grandpa.
