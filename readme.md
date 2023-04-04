@@ -1,7 +1,11 @@
 # PIC-nixie #
 Design of a simple yet accurate Nixie clock controlled by a single chip MCU. No arduino. 
 
+![Main PCB](logicf.png)
+
 For IN-14 or IN-8-2 Nixie neon tubes. 
+
+![IN-14 Socket Board](in14-socketf.png)
 
 The time is displayed on four tubes with MUX-ed cathodes. The digits are output in binary-coded decimal for interfacing with the K155ID1 driver. Anodes and the colon bulb (12:34) are also controlled by the PIC through BJT-pMOS level shifters.
 
