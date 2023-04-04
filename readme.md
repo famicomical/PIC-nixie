@@ -1,5 +1,5 @@
 # PIC-nixie #
-Design of a simple yet accurate Nixie clock controlled by a single chip MCU. No arduino. 
+Design of a simple yet accurate Nixie clock controlled by a single-chip MCU. No arduino. 
 
 ![Main PCB](logicf.png)
 
