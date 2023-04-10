@@ -17,7 +17,7 @@ A CR2032 battery can be installed on the circuit board to provide backup power i
 
 ## Design
 
-The PCB assembly is housed in a 'C'-shaped enclosure, which obscures the tops of the neon tubes. The design was developed in collaboration with my friend [Donald Swen](https://www.dswenn.com/projects/2019/11/27/22-Design.html) at Stanford's Design School. The idea is that, by hiding the pointed tops of the IN-14 tubes, the finished clock achieves a symettry that would normally only be possible with IN-12 bulbs. With this clock shape, the vertical digits now appear to be floating seamlessly within a cylinder. PIC-Nixie is the first neon tube clock to incorporate this aesthetic design principle.
+The PCB assembly is housed in a 'C'-shaped enclosure, which obscures the tops of the neon tubes. The design was developed in collaboration with my friend [Donald Swen](https://www.dswenn.com/projects/2019/11/27/22-Design.html) at Stanford's Design School. The idea is that, by hiding the pointed tops of the IN-14 tubes, the finished clock can achieve a symettry that would normally only be possible with IN-12 bulbs. With this clock shape, the vertical digits now appear to be floating seamlessly within a cylinder. PIC-Nixie is the first neon tube clock to incorporate this aesthetic design principle.
 
 ![Serial #0](exemplar.jpg)
 
