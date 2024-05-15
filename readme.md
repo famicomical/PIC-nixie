@@ -1,10 +1,10 @@
 # PIC-nixie #
-Design of a simple yet accurate Nixie clock controlled by a single-chip MCU. No arduino. 
+Design of a simple yet accurate Nixie clock controlled by a single-chip MCU. 
 
+Logic Board:
 ![Main PCB](logicf.png)
 
-For IN-14 or IN-8-2 Nixie neon tubes. 
-
+Socket Board for IN-14 Tubes:
 ![IN-14 Socket Board](in14-socketf.png)
 
 The socket PCB plugs into the logic board to make an 'L' shape.
